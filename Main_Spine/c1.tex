@@ -1,240 +1,66 @@
 % !TeX root = ../main.tex
 
-\xchapter{绪论}{Introductions}
+\xchapter{绪论}{Introduction}
 
-\xsection{背景}{Backgrounds}
+\xsection{研究背景及意义}{Research Background and Significance}
 
-本文档仅提供部分可能用到的示例，系统的学习 \LaTeX 用法请参考其他书目，如 \emph{lshort}，可通过在 shell(命令行/cmd) 中执行 \clist{texdoc lshort-zh} 获得中文版。
+强化学习（Reinforcement Learning, RL）作为解决序贯决策（Sequential Decision Making）问题的核心机器学习范式，其基础理论建立在马尔可夫决策过程（Markov Decision Process, MDP）之上，旨在通过智能体（Agent）与环境（Environment）的持续交互，利用试错机制与延迟奖励信号优化行为策略，从而实现长期累积期望回报的最大化。近年来，随着深度学习（Deep Learning）技术的迅猛发展，深度强化学习（Deep Reinforcement Learning, DRL）将深度神经网络强大的非线性特征提取与高维连续函数逼近能力引入决策框架，在诸多具有极高复杂度的理论控制任务中取得了突破性进展。
 
-同时，务必意识到 \LaTeX 的工作及使用方式与 Microsoft Word 有极大的不同，不要问「怎么在 \LaTeX 中实现 Word 的 xx 功能」。
+然而，现有的大多数深度强化学习算法在理论推导与模型训练中，普遍隐含了一个极其严格的数学假设，即假定训练数据集与测试数据集满足绝对的独立同分布（Independent and Identically Distributed, IID）条件。在理想的仿真验证平台中，状态转移概率矩阵与奖励函数被设定为静态且完全可知，智能体所接收到的状态观测（Observation）呈现出完美的连续性与无噪性。但在面对真实、非平稳的复杂开放环境时，这一理想化假设难以成立。复杂环境中普遍存在的环境动力学微调、观测噪声注入以及状态特征的瞬态扰动，会导致测试阶段的观测数据分布与训练流形发生显著偏离，进而产生严重的分布外（Out-of-Distribution, OOD）泛化难题。当输入状态脱离原始训练分布时，深度神经网络的隐层激活极易产生不可预期的畸变，导致原有特征表征逻辑失效，进而引发策略网络动作输出退化与价值网络评估发散。具体而言，这种由观测分布偏移引发的底层表征危机，在当前强化学习领域的两大重要研究分支——高维视觉强化学习（Visual RL）与低维结构化离线强化学习（Offline RL）中，分别演化出了截然不同却又殊途同归的理论瓶颈。
 
-\xsection{符号说明}{Examples}
+在高维视觉强化学习研究中，模型通常直接以高维连续的图像像素作为输入，采用端到端（End-to-End）的学习范式提取隐层状态并输出控制动作。这种范式虽然规避了人工特征工程的主观偏差，但高维视觉空间中充斥着大量与马尔可夫决策底层动力学无关的冗余信息（如光度变化、背景纹理差异、相机视角的微小偏移等）。由于卷积神经网络等视觉表征模块在联合优化时具有强烈的局部拟合倾向，模型极易将这些环境中的虚假关联（Spurious Correlations）作为决策依据。当测试阶段遭遇视觉要素的分布偏移时，泛化能力的缺失将直接导致策略崩溃。为了提升视觉强化学习在 OOD 环境下的鲁棒性，学术界广泛借鉴了计算机视觉领域的数据增强（Data Augmentation）技术，试图通过对训练样本施加随机平移、裁剪、色彩抖动或频率掩码等空间与光度变换，强行扩充观测分布的支撑集，从而迫使模型学习具备变换不变性（Transformation Invariance）的泛化特征。
 
-为了更加清楚的说明本模板的用法，特意使用了如下几种标记方式来标记「\LaTeX 源码」及「说明」：
+然而，从强化学习的理论推导角度审视，直接套用标准数据增强范式存在一个固有的理论矛盾：泛化能力的提升往往以牺牲样本利用效率（Sample Efficiency）与训练稳定性（Training Stability）为代价。与监督学习中分类标签对图像变换具有绝对不变性的假设不同，强化学习的核心优化目标是基于时间差分（Temporal Difference, TD）方法学习精确的状态-动作价值函数。时间差分自举（Bootstrapping）机制对状态序列的时间连续性与马尔可夫平滑性要求极高。当模型引入大尺度的数据增强操作（如剧烈的随机卷积或大角度旋转）时，不仅会破坏输入图像中原本具有严密几何意义的物理拓扑，更会导致相邻时间步的状态表征产生非平稳跳变。这种表征层面的高频震荡在贝尔曼更新（Bellman Update）过程中会被迅速放大，导致 TD 目标值的估计方差急剧攀升，进而引发策略梯度更新的发散。此外，部分增强类型在特定控制任务中具有内在的破坏性，例如盲目的旋转操作会直接摧毁状态空间中的方向语义，导致奖励信号与观测状态发生逻辑错位。因此，如何打破视觉强化学习中“泛化与稳定不可兼得”的困境，在引入数据多样性的同时有效抑制高方差 TD 误差的传播，迫切要求算法具备任务感知能力，能够从概率建模的视角自适应地筛选与当前任务动力学相适配的数据增强策略。这是当前视觉强化学习实现高效泛化亟待解决的表征优化难题。
 
-\clist{行内的灰色字块}表示简短的代码（\LaTeX 或 shell）；
+与高维视觉输入所面临的冗余干扰挑战不同，离线强化学习（Offline RL）主要处理由一系列低维、结构化特征向量构成的状态空间。离线强化学习旨在完全脱离在线交互，仅依靠预先收集的静态次优数据集推演全局最优策略。当前主流的离线强化学习算法，如保守 Q 学习（CQL）与隐式 Q 学习（IQL），其核心理论贡献大多聚焦于解决动作空间的分布外（Action-space OOD）问题。这些方法通过向价值函数注入下界惩罚项，或采用非对称的期望回归（Expectile Regression）技术，有效限制了策略对未见动作的盲目查询，从而在数学上缓解了离线自举过程中的外推误差（Extrapolation Error）与值函数病态高估现象。
 
-\clist[columbiablue]{行内的蓝色字块}表示宏包的名称。
+然而，现有离线强化学习算法的保守性约束往往仅局限于动作空间，其理论框架隐含了一个极为脆弱的前提：即测试阶段的状态边缘分布与离线训练数据集的状态分布严格对齐。在处理具有高度不确定性的复杂任务时，观测状态由于特征扰动或维度级数据缺失（Dimension-wise Missingness），极易发生严重的协变量偏移（Covariate Shift），进而产生状态空间的分布外（State-space OOD）难题。传统的离线强化学习模型通常采用多层感知机（MLP）拟合状态到动作的浅层非线性映射，这种参数化方式极其缺乏对状态变量内部固有相关性（如各个状态维度之间的运动学或动力学约束）的深度建模。当面临哪怕是单一维度特征缺失的 OOD 状态时，由于缺乏多模态特征推断与冗余信息对齐能力，神经网络的内部激活值会发生不可预期的剧烈偏移，产生严重的“特征坍塌（Feature Collapse）”现象。在特征坍塌效应的干扰下，原本受保守机制严格约束的离线价值网络会陷入认知混淆，在 OOD 状态区域给出灾难性的价值高估，最终导致智能体策略失效。因此，面对状态空间的协变量偏移与特征缺失，如何引入深度的表征正则化（Representation Regularization）机制，促使模型挖掘状态空间固有的低维数据流形（Intrinsic Data Manifold），并通过表征层面的重构赋予智能体在异常残缺状态下的流形对齐与分布泛化能力，是离线强化学习领域尚未充分探索的核心理论盲区。
 
-\begin{tcolorbox}
-  灰色框用来放置有一定长度的 \LaTeX 源码（及执行结果）
-\end{tcolorbox}
+综合上述对高维视觉强化学习与低维离线强化学习在面对分布偏移时理论瓶颈的深度剖析，可以明确指出：无论是视觉空间中的冗余扰动，还是结构化状态空间中的特征缺失，其底层共性均揭示了当前强化学习算法在面对“不完美复杂观测”时，通用表示学习（Representation Learning）能力的严重匮乏。传统的强化学习优化范式过于侧重策略与价值网络后端的梯度计算设计，而长期忽视了在状态输入前端构建稳健、抗噪、具备推理能力的表征基础。
 
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  红色框用来放置学校的学位论文模板的\textbf{格式}要求
-\end{tcolorbox}
+基于此背景，本文以提升强化学习在非平稳环境与观测分布偏移条件下的泛化能力与鲁棒性为总目标，重点围绕“面向复杂观测条件的强化学习表征优化与策略协同”展开系统性研究。本文的研究意义主要体现在理论拓展与算法设计两个维度：在理论研究层面，本文致力于打破传统强化学习端到端盲目联合优化的理论局限，深入探索表示学习辅助机制与强化学习策略优化过程的解耦与协同机制。针对视觉强化学习的高维观测 OOD 问题，本文提出基于任务感知的数据增强自适应选择机制，从概率论与信息瓶颈的角度揭示了增强数据分布、特征方差控制与任务奖励逻辑之间的深层关联。针对离线强化学习中的状态空间 OOD 与协变量偏移问题，本文首次将自监督掩码建模（Masked Modeling）思想引入低维连续状态空间，将掩码重构作为一种强大的表征正则化手段。在算法设计与应用潜力层面，本文的研究成果为提升人工智能算法在复杂不确定环境中的可靠性提供了切实可行的方法范式。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black]
-  蓝色框用来放置学校的学位论文模板的\textbf{内容}要求
-\end{tcolorbox}
+\xsection{国内外研究现状}{Research Status at Home and Abroad}
 
+\xsubsection{视觉强化学习与数据增强研究现状}{Research Status of Visual RL and Data Augmentation}
 
-\clearpage
+在视觉强化学习中，智能体需要直接从高维像素空间中提取状态特征并进行决策。早期的视觉强化学习算法（如 DQN 及其变体）通常直接将卷积神经网络（CNN）与强化学习目标函数进行端到端联合训练。然而，受限于高维状态空间的复杂性与强化学习奖励信号的稀疏性，这类方法通常面临极低的样本效率。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=绪论部分的要求]
-  绪论部分主要论述论文的选题意义及应用背景、国内外研究现状分析及论文的主要研究内容等。
-\end{tcolorbox}
+为了提升视觉强化学习的数据利用率与特征提取能力，数据增强（Data Augmentation）技术被广泛引入。Laskin 等人（2020）提出了 RAD 框架，证明了简单的图像随机裁剪即可显著提升 Soft Actor-Critic (SAC) 算法的数据效率。Kostrikov 等人（2020）提出的 DrQ 算法，通过对同一观测图像进行多次随机平移增强，有效降低了目标 Q 值的估计方差。随着强化学习应用场景的拓展，研究者开始关注视觉强化学习的分布外（OOD）泛化问题。Hansen 等人（2021）提出的 SVEA 算法深刻指出了强数据增强在强化学习中导致训练不稳定的原因，并修改了 Q 目标的形式以保持优化的稳定性。
 
-\xsection{基本功能}{Basic Functions}
+尽管上述方法在提升泛化性能方面取得了显著进展，但它们普遍存在一个理论局限：忽视了数据增强类型与特定控制任务之间的语义适配性。现有的增强机制大多是盲目且独立于任务的（Task-Agnostic）。缺乏任务引导的强行增强，不可避免地会引入严重的观测噪声，导致样本效率的退化与策略训练的震荡。
 
-\xsubsection{文档层级}{Level of this document}
+\xsubsection{离线强化学习与策略鲁棒性研究现状}{Research Status of Offline RL and Policy Robustness}
 
-按照学校的要求，正文最多应具有七个层级，分别使用以下命令，为了方便中英目录的生成，前三层命令是由模板自定义的，同时第六层目录的命令是由模板新增的。注意，不论正文主体是中或英，目录顺序均为先中后英，这些命令有两个参数的也是先中后英。
+离线强化学习（Offline RL）旨在从预先收集的静态数据集中学习策略。由于离线数据通常无法覆盖整个状态-动作空间，传统的异策略算法在离线设定下会产生严重的外推误差（Extrapolation Error）。为了克服这一难题，Kumar 等人（2020）提出的保守 Q 学习（CQL）通过引入 Q 值惩罚项学习保守的下界价值函数。Kostrikov 等人（2021）提出的隐式 Q 学习（IQL）则通过采用非对称的期望回归拟合状态价值函数 $V(s)$，极大地提升了离线强化学习在次优数据集上的表现。
 
-\begin{table}[H]
-  \begin{tabularx}{\textwidth}{YY}
-  \toprule
-      层级 & 命令 \\
-  \midrule
-      0  & \lstinline|\\xchapter{Chs}{Eng}| \\
-      1  & \lstinline|\\xsection{Chs}{Eng}| \\
-      2  & \lstinline|\\xsubsection{Chs}{Eng}| \\
-      3  & \lstinline|\\subsubsection{Chs/Eng}| \\
-      4  & \lstinline|\\paragraph{Chs/Eng}| \\
-      5  & \lstinline|\\subparagraph{Chs/Eng}| \\
-      6  & \lstinline|\\subsubparagraph{Chs/Eng}| \\
-  \bottomrule
-  \end{tabularx}
-\end{table}
+然而，现有的离线强化学习算法普遍基于一个理想化前提：测试阶段的状态空间是完整且无损的。它们的“保守性”仅针对动作空间的 OOD 问题，而缺乏对状态空间分布偏移的抵御能力。在工业控制与机器人部署等真实场景中，更常见的问题是非对抗性的自然物理失效，例如因传感器老化或通信丢包导致的部分状态维度缺失。传统多层感知机（MLP）难以捕捉状态变量之间的潜在运动学或动力学约束。因此，如何为离线强化学习引入状态推断机制，提升其在传感器局部失效等破坏性状态下的特征恢复与策略鲁棒能力，是目前研究中尚未被充分填补的空白。
 
-示例如下：
+\xsubsection{强化学习中的表示学习机制研究现状}{Research Status of Representation Learning in RL}
 
-\subsubsection{第四级标题$1$}
+为了应对高维冗余观测与部分信息缺失的挑战，将表示学习（Representation Learning）与强化学习相结合已成为近年的研究热点。Srinivas 等人（2020）提出的 CURL 算法成功将对比学习应用于基于像素的强化学习。在生成式掩码建模方面，受 MAE（He 等人, 2022）的启发，自监督的重建任务逐渐被引入决策序列建模。掩码建模通过随机掩码掉部分输入数据，迫使神经网络利用剩余的上下文信息进行还原，从而学习到数据内部深刻的结构依赖关系。
 
-\paragraph{第五级标题$1$}
+更重要的是，将自监督表示学习与强化学习的策略优化过程进行端到端联合训练，面临着严峻的梯度冲突（Gradient Conflict）问题。如果允许 TD 误差的梯度回传至特征编码器，会严重破坏重建任务原本提取的稳定物理结构特征，导致“表征坍塌”。因此，如何设计合理的架构，实现特征重建任务与策略优化任务的有效解耦（Decoupling），是利用表示学习提升强化学习鲁棒性的关键技术挑战。
 
-\paragraph{第五级标题$2$}
+\xsection{论文主要研究内容}{Main Research Content of the Thesis}
 
-\paragraph{第五级标题$3$}
+本文聚焦于强化学习智能体在面临复杂观测环境时泛化能力不足与策略脆弱的核心难题。具体研究内容包括以下两个方面：
 
-\subparagraph{第六级标题$1$}
+\begin{enumerate}[label=\arabic*）]
+    \item \textbf{针对视觉强化学习中因盲目应用数据增强导致的训练不稳定与样本低效问题，提出一种基于任务感知的数据增强选择方法（PICK）。}
+    本文提出了一种任务感知型的数据增强选择框架（PICK）。首先，引入了一个独立并行的选择网络（Pick Network），动态输出不同数据增强方法在当前任务状态下被选用的概率分布。其次，利用 Critic 网络的目标函数反馈信号来指导选择网络的参数更新，使模型能够自适应地抑制具有破坏性的增强操作。实验结果表明，PICK 方法在样本利用效率、收敛速度以及未见环境的泛化性能方面均显著优于现有先进算法。
 
-\subparagraph{第六级标题$2$}
+    \item \textbf{针对离线强化学习中因传感器局部失效等物理信息缺失引发的特征坍塌与策略崩溃问题，提出一种基于自监督掩码重建的鲁棒离线强化学习方法（Masked-IQL）。}
+    本文提出将自监督表示学习与离线强化学习相结合的 Masked-IQL 算法框架。首先，将传感器物理缺失建模为随机掩码（Masking）操作；其次，构建基于状态特征的掩码自编码器，通过最小化重建误差的辅助任务，迫使编码器挖掘不同维度传感器数据间潜在的物理约束关系。最后，设计了表征与决策严格解耦（Gradient Detach）的训练范式，成功避免了 TD 误差对重建流形的破坏。
+\end{enumerate}
 
-\subparagraph{第六级标题$3$}
+\xsection{论文组织结构}{Thesis Organization}
 
-第六级下的一些文字
-
-\subsubparagraph{第七级标题$1$}
-
-第七级下的一些文字
-
-\xsubsection{加粗，斜体与其他字体设置}{Bold, Emph and Other Font Settings}
-
-在中文学位论文的写作中，不推荐使用加粗，斜体等方式突出重点。
-
-使用\clist{\textbf{text}}进行可以对字加粗；同时，请注意到在英文中，正确的强调方式不是使用加粗，而是使用斜体，即使用\clist{\emph{text}}进行强调。如：
-\begin{texcode}[]{}
-  为了突出\textbf{重点}，英文可以这样：This is the \emph{key question}.
-\end{texcode}
-
-使用\clist{\textit{text}}、\clist{\underline{text}}等实现斜体，下划线等格式。
-
-
-
-
-
-\xsubsection{脚注及其使用}{Footnotes}
-
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  脚注可用小号字（一般小五号宋体）列在相应正文同一页最下部并与正文部分用细线（版面宽度的1/4长）隔开。
-\end{tcolorbox}
-
-脚注\footnote{脚注序号“\ding{172}，……，\ding{180}”的字体是“正文”，不是“上标”，序号与脚注内容文字之间空$1$个半角字符，脚注的段落格式为：单倍行距，段前空$0$磅，段后空$0$磅，悬挂缩进$1.5$字符；中文用宋体，字号为小五号，英文和数字用Times New Roman字体，字号为$9$磅；中英文混排时，所有标点符号（例如逗号“，”、括号“（）”等）一律使用中文输入状态下的标点符号，但小数点采用英文状态下的样式“.”。}\footnote{脚注序号“\ding{172}，……，\ding{180}”的字体是“正文”，不是“上标”，序号与脚注内容文字之间空$1$个半角字符，脚注的段落格式为：单倍行距，段前空$0$磅，段后空$0$磅，悬挂缩进$1.5$字符；中文用宋体，字号为小五号，英文和数字用Times New Roman字体，字号为$9$磅；中英文混排时，所有标点符号（例如逗号“，”、括号“（）”等）一律使用中文输入状态下的标点符号，但小数点采用英文状态下的样式“.”。}\footnote{脚注序号“\ding{172}，……，\ding{180}”的字体是“正文”，不是“上标”，序号与脚注内容文字之间空$1$个半角字符，脚注的段落格式为：单倍行距，段前空$0$磅，段后空$0$磅，悬挂缩进$1.5$字符；中文用宋体，字号为小五号，英文和数字用Times New Roman字体，字号为$9$磅；中英文混排时，所有标点符号（例如逗号“，”、括号“（）”等）一律使用中文输入状态下的标点符号，但小数点采用英文状态下的样式“.”。}是对文中有关内容的解释、说明或补充，使用上角标（序号\ding{172}、\ding{173}、$\cdots$）进行标注。
-
-脚注可以通过 \clist{\footnote{}}自动编号生成，也可使用\clist{\footnotetex{text}}手动添加脚注。
-
-摘要中关于项目资助的标识，是使用脚注生成的：
-
-\begin{tcolorbox}
-  \lstinline|\footnotetext{*本研究得到某某基金（编号：）的资助}|
-\end{tcolorbox}
-
-
-\clearpage
-
-\xsection{数字、公式和定理环境}{Equation and Theorem}
-
-\xsubsection{数字与单位}{Numbers and Units}
-
-模板引入了\clist[columbiablue]{siunitx}宏包实现数字与单位的正确排版，具体使用细节请自行查看该宏包，即 \clist{texdoc siunitx}。
-
-为了输入不同格式及角度的数字，可以使用\clist{\num{3.45d-4}}得到\num{3.45d-4}，使用\clist{\num{-e10}}得到\num{-e10}，使用\clist{\ang{1;2;3}}得到\ang{1;2;3}，避免了手动调节格式的问题。
-
-该宏包预先定义了部分单位，可以直接调用，同时生成较为复杂的单位。如：
-
-使用\clist{\SI{10}{\hertz}}得到 \SI{10}{\hertz}。
-
-\xsubsection{公式、矩阵与数学符号}{Equations, Matrix and Mathematical Symbols}
-
-
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 公式应另起一行，居中编排，较长的公式尽可能在等号后换行，或者在“+”、“-”等符号后换行。公式中分数线的横线，长短要分清，主要的横线应与等号取平。
-    \item 公式后应注明编号，公式号应置于小括号中，如公式（2-3）。写在右边行末，中间不加虚线；
-    \item 公式下面的“式中：”两字左起顶格编排，后接符号及其解释；解释顺序为先左后右，先上后下；解释与解释之间用“；”隔开。
-    \item 公式中各物理量及量纲均按国际标准（SI）及国家规定的法定符号和法定计量单位标注，禁止使用已废弃的符号和计量单位。
-  \end{enumerate}
-\end{tcolorbox}
-
-此部分是 \LaTeX 中比较精彩的一部分，具体的使用细节请自行查阅资料，本模板未对其进行修改。
-
-\begin{texcode}[]{}
-  公式如下：
-  \begin{equation}
-      -e^{\max}_\text{dis} \leq a_t \leq e^{\max}_\text{ch}\label{eqn:c1:mdl:constraint_discharge}
-  \end{equation}
-  式中：$e$为xxx；$a$为xxx。
-\end{texcode}
-
-所以如式\eqref{eqn:c1:mdl:constraint_discharge}所示：
-\begin{equation}
-    -e^{\max}_\text{dis} \leq a_t \leq e^{\max}_\text{ch}
-\end{equation}
-
-请注意，本模板已经定义了\clist{\diff}命令作为微分符号，请不要自己使用新的符号，使用效果如下：
-\begin{align}\label{eqn:c1:diff}
-  \biggl(\int_{-\infty}^\infty e^{-x^2}\diff x\biggr)^2 
-    &= \int_{-\infty}^\infty\int_{-\infty}^\infty e^{-(x^2+y^2)}\diff x\diff y \\
-    &= \int_0^{2\pi}\int_0^\infty e^{-r^2}r\diff r\diff\theta \\
-    &= \int_0^{2\pi}\biggl(-{e^{-r^2}\over2}\bigg\vert_{r=0}^{r=\infty}\,\biggr)\diff\theta \\
-    &= \pi
-\end{align}
-
-
-同时，定义了部分用于简化输入的命令：
-
-\begin{texcode}[sidebyside]{}
-  $\seq{x}{n}$ \\ % serise
-  $\iprod{i}{j}$ \\ % inner product
-  $\mbf{B}$ \\ % acronym of \mathbf
-  $\Re{Q},\Im{Q}$
-\end{texcode}
-
-\clearpage
-
-\xsubsection{定理相关}{Theorems}
-
-本模板通过\clist[columbiablue]{thmtools}宏包定义了以下环境，其中\textbf{证明}环境默认具有缩进，没有编号，同时使用\clist{\qedhere}结束证明，其他环境样式一致。
-
-\begin{table}[H]
-  \begin{tabularx}{\textwidth}{YYY|YYY}
-  \toprule
-    环境 & 英文名称 & 中文名称 & 环境 & 英文名称 & 中文名称 \\
-  \midrule
-    proof & Proof & 证明 & theorem & Theorem & 定理 \\
-    axiom & Axiom & 公理 & corollary & Corollary & 推论 \\
-    lemma & Lemma & 引理 & definition & Definition & 定义 \\
-    example & Example & 例子 & proposition & Proposition & 命题 \\
-    assumption & Assumption & 假设 & remark & Remark & 注 \\
-    problem & Problem & 问题 & conjecture & Conjecture & 猜想 \\
-  \bottomrule
-  \end{tabularx}
-\end{table}
-
-
-\begin{texcode}[]{}
-  \begin{theorem}[勾股定理]
-    若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$
-  \end{theorem}
-
-  \begin{proof}
-    通过\ldots
-
-    所以：
-    \begin{equation*}
-        G(x, y) = G(y, x).  \qedhere
-    \end{equation*}
-  \end{proof}
-\end{texcode}
-
-\begin{proposition}
-  所以：
-  \begin{equation*}
-      G(x, y) = G(y, x).
-  \end{equation*}
-\end{proposition}
-
-\begin{conjecture}[勾股定理]
-    若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$
-\end{conjecture}
-
-\begin{axiom}[勾股定理]
-    若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$ 若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$ 若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$
-\end{axiom}
-
-\begin{definition}[勾股定理]
-    若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$
-\end{definition}
-
-\xsection{其他环境}{Other Environments}
-
-\xsubsection{枚举环境}{Enumerates}
-
-\begin{texcode}[]{}
-  \begin{enumerate}
-    \item 123
-    \item 231421
-    \item 124124
-  \end{enumerate}
-\end{texcode}
+本文围绕复杂观测环境下的强化学习表征优化与鲁棒性问题展开系统性研究，全文共分为五章：
+\begin{itemize}
+    \item \textbf{第一章 绪论}：阐述研究背景及意义，梳理国内外研究现状，明确主要研究内容与组织结构。
+    \item \textbf{第二章 相关理论与技术}：介绍马尔可夫决策过程、SAC 算法、IQL 算法以及自监督表示学习理论。
+    \item \textbf{第三章 基于任务感知的视觉强化学习数据增强选择方法}：详细论述 PICK 算法的设计原理及其在视觉偏移环境下的优越性。
+    \item \textbf{第四章 基于自监督掩码重建的鲁棒离线强化学习方法}：阐述 Masked-IQL 算法在传感器局部失效条件下的鲁棒性与特征修复能力。
+    \item \textbf{第五章 总结与展望}：归纳创新点与贡献，并对未来研究方向进行展望。
+\end{itemize}

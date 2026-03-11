@@ -1,0 +1,147 @@
+\contentsline {chapter}{摘~~~~要}{I}{section*.2}%
+\contentsline {chapter}{ABSTRACT}{III}{section*.5}%
+\contentsline {chapter}{主要符号表}{IX}{section*.9}%
+\setcounter {tocdepth}{-5}
+\contentsline {chapter}{\numberline {1}绪论}{1}{section*.13}%
+\setcounter {tocdepth}{2}
+\contentsline {chapter}{\numberline {1}绪论}{1}{section*.14}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {1.1}研究背景及意义}{1}{section*.16}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {1.1}研究背景及意义}{1}{section*.17}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {1.2}国内外研究现状}{3}{section*.19}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {1.2}国内外研究现状}{3}{section*.20}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {1.2.1}视觉强化学习与数据增强研究现状}{3}{section*.22}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {1.2.1}视觉强化学习与数据增强研究现状}{3}{section*.23}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {1.2.2}离线强化学习与策略鲁棒性研究现状}{4}{section*.25}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {1.2.2}离线强化学习与策略鲁棒性研究现状}{4}{section*.26}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {1.2.3}强化学习中的表示学习机制研究现状}{4}{section*.28}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {1.2.3}强化学习中的表示学习机制研究现状}{4}{section*.29}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {1.3}论文主要研究内容}{5}{section*.31}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {1.3}论文主要研究内容}{5}{section*.32}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {1.4}论文组织结构}{5}{section*.34}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {1.4}论文组织结构}{5}{section*.35}%
+\setcounter {tocdepth}{-5}
+\contentsline {chapter}{\numberline {2}相关理论与技术}{6}{section*.37}%
+\setcounter {tocdepth}{2}
+\contentsline {chapter}{\numberline {2}相关理论与技术}{6}{section*.38}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {2.1}强化学习与连续控制基础理论}{6}{section*.40}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {2.1}强化学习与连续控制基础理论}{6}{section*.41}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {2.1.1}马尔可夫决策过程与部分可观测马尔可夫决策过程}{6}{section*.43}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {2.1.1}马尔可夫决策过程与部分可观测马尔可夫决策过程}{6}{section*.44}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {2.1.2}Actor-Critic 架构}{8}{section*.46}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {2.1.2}Actor-Critic 架构}{8}{section*.47}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {2.1.3}最大熵强化学习与 Soft Actor-Critic 算法}{10}{section*.49}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {2.1.3}最大熵强化学习与 Soft Actor-Critic 算法}{10}{section*.50}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {2.2}离线强化学习与保守价值评估}{12}{section*.52}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {2.2}离线强化学习与保守价值评估}{12}{section*.53}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {2.2.1}离线强化学习范式与分布偏移问题}{12}{section*.55}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {2.2.1}离线强化学习范式与分布偏移问题}{12}{section*.56}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {2.2.2}隐式 Q 学习算法}{14}{section*.58}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {2.2.2}隐式 Q 学习算法}{14}{section*.59}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {2.3}复杂观测下的表示学习机制}{17}{section*.61}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {2.3}复杂观测下的表示学习机制}{17}{section*.62}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {2.3.1}视觉强化学习与数据增强表示}{17}{section*.64}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {2.3.1}视觉强化学习与数据增强表示}{17}{section*.65}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {2.3.2}掩码建模与自监督特征重建}{19}{section*.67}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {2.3.2}掩码建模与自监督特征重建}{19}{section*.68}%
+\setcounter {tocdepth}{-5}
+\contentsline {chapter}{\numberline {3}算法与代码}{22}{section*.70}%
+\setcounter {tocdepth}{2}
+\contentsline {chapter}{\numberline {3}算法与代码}{22}{section*.71}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {3.1}算法}{22}{section*.73}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {3.1}算法}{22}{section*.74}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {3.2}导入代码}{24}{section*.80}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {3.2}导入代码}{24}{section*.81}%
+\setcounter {tocdepth}{-5}
+\contentsline {chapter}{\numberline {4}参考文献与交叉引用}{27}{section*.84}%
+\setcounter {tocdepth}{2}
+\contentsline {chapter}{\numberline {4}参考文献与交叉引用}{27}{section*.85}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {4.1}公式、图表的引用}{27}{section*.87}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {4.1}公式、图表的引用}{27}{section*.88}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {4.1.1}引用公式}{27}{section*.90}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {4.1.1}引用公式}{27}{section*.91}%
+\setcounter {tocdepth}{-5}
+\contentsline {subsection}{\numberline {4.1.2}引用其他内容}{27}{section*.93}%
+\setcounter {tocdepth}{2}
+\contentsline {subsection}{\numberline {4.1.2}引用其他内容}{27}{section*.94}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {4.2}参考文献}{27}{section*.96}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {4.2}参考文献}{27}{section*.97}%
+\setcounter {tocdepth}{-5}
+\contentsline {chapter}{\numberline {5}非正文部分的要求}{29}{section*.99}%
+\setcounter {tocdepth}{2}
+\contentsline {chapter}{\numberline {5}非正文部分的要求}{29}{section*.100}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {5.1}摘要}{29}{section*.102}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {5.1}摘要}{29}{section*.103}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {5.2}主要符号表}{30}{section*.105}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {5.2}主要符号表}{30}{section*.106}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {5.3}攻读学位期间取得的研究成果}{30}{section*.108}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {5.3}攻读学位期间取得的研究成果}{30}{section*.109}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {5.4}答辩委员会会议决议}{31}{section*.111}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {5.4}答辩委员会会议决议}{31}{section*.112}%
+\setcounter {tocdepth}{-5}
+\contentsline {chapter}{\numberline {6}本模板已载入的 Packages}{32}{section*.114}%
+\setcounter {tocdepth}{2}
+\contentsline {chapter}{\numberline {6}本模板已载入的 Packages}{32}{section*.115}%
+\contentsline {chapter}{致谢}{33}{section*.118}%
+\contentsline {chapter}{参考文献}{34}{section*.121}%
+\contentsline {chapter}{附录}{35}{section*.124}%
+\setcounter {tocdepth}{-5}
+\contentsline {chapter}{\numberline {附录A}公式推导}{35}{section*.126}%
+\contentsline {section}{\numberline {附录A.1}第一章}{35}{section*.127}%
+\contentsline {chapter}{\numberline {附录B}附录图表}{36}{section*.132}%
+\setcounter {tocdepth}{2}
+\contentsline {chapter}{攻读学位期间取得的研究成果}{36}{section*.139}%
+\contentsline {chapter}{答辩委员会会议决议}{38}{section*.142}%
+\contentsline {chapter}{常规评阅人名单}{39}{section*.146}%
+\contentsfinish 

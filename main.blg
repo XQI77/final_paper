@@ -1,0 +1,46 @@
+[0] Config.pm:328> INFO - This is Biber 2.21
+[0] Config.pm:331> INFO - Logfile is 'main.blg'
+[132] biber-MSWIN64:342> INFO - === 
+[176] Biber.pm:421> INFO - Reading 'main.bcf'
+[389] Biber.pm:999> INFO - Using all citekeys in bib section 0
+[406] Biber.pm:4487> INFO - Processing section 0
+[419] Biber.pm:4678> INFO - Looking for bibtex file 'References/reference.bib' for section 0
+[470] bibtex.pm:1713> INFO - LaTeX decoding ...
+[505] bibtex.pm:1519> INFO - Found BibTeX data source 'References/reference.bib'
+[859] Biber.pm:1709> INFO - Datamodel validation starting
+[864] Biber.pm:1759> INFO - Datamodel validation complete
+[921] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[922] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[922] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
+[923] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
+[939] bbl.pm:676> INFO - Writing 'main.bbl' with encoding 'UTF-8'
+[975] bbl.pm:779> INFO - Output to main.bbl
+[1003] Biber.pm:132> WARN - Datamodel: book entry '王永华2013现代电气控制及' (References/reference.bib): Field 'address' invalid in data model - ignoring
+[1003] Biber.pm:132> WARN - Datamodel: thesis entry '黄雪芳2012探讨电气工程中自动化技术的应用' (References/reference.bib): Field 'address' invalid in data model - ignoring
+[1003] Biber.pm:132> WARN - Datamodel: book entry '王永华2013现代电气控制及' (References/reference.bib): Invalid field 'languageid' for entrytype 'book'
+[1003] Biber.pm:132> WARN - Datamodel: book entry '王永华2013现代电气控制及' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'book'
+[1004] Biber.pm:132> WARN - Datamodel: article entry '刘海龙2010浅谈电气自动化的现状与发展方向' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry '刘海龙2010浅谈电气自动化的现状与发展方向' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry '陈众励2007建筑电气节能技术综述' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry '陈众励2007建筑电气节能技术综述' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry '张燕2013电气自动化在电气工程中的应用探讨' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry '张燕2013电气自动化在电气工程中的应用探讨' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry '王磊2011电气自动化控制设备可靠性探究' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry '王磊2011电气自动化控制设备可靠性探究' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry 'sachdeva_effect_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry 'sachdeva_effect_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry 'barella_situ_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry 'barella_situ_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry 'wu_doublely-doped_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry 'wu_doublely-doped_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry 'luo_superhydrophobic_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1004] Biber.pm:132> WARN - Datamodel: article entry 'luo_superhydrophobic_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1005] Biber.pm:132> WARN - Datamodel: article entry 'hu_encapsulation_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1005] Biber.pm:132> WARN - Datamodel: article entry 'hu_encapsulation_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1005] Biber.pm:132> WARN - Datamodel: article entry 'qian_facile_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1005] Biber.pm:132> WARN - Datamodel: article entry 'qian_facile_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1005] Biber.pm:132> WARN - Datamodel: article entry 'evans_cooperative_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1005] Biber.pm:132> WARN - Datamodel: article entry 'evans_cooperative_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1005] Biber.pm:132> WARN - Datamodel: article entry 'atta_enhanced_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'
+[1005] Biber.pm:132> WARN - Datamodel: article entry 'atta_enhanced_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'
+[1005] Biber.pm:134> INFO - WARNINGS: 28

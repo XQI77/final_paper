@@ -1,0 +1,42 @@
+\contentsline {chapter}{ABSTRACT (Chinese)}{I}{section*.3}%
+\contentsline {chapter}{ABSTRACT (English)}{III}{section*.6}%
+\contentsline {chapter}{Glossary}{IX}{section*.10}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{section*.15}%
+\contentsline {section}{\numberline {1.1}Research Background and Significance}{1}{section*.18}%
+\contentsline {section}{\numberline {1.2}Research Status at Home and Abroad}{3}{section*.21}%
+\contentsline {subsection}{\numberline {1.2.1}Research Status of Visual RL and Data Augmentation}{3}{section*.24}%
+\contentsline {subsection}{\numberline {1.2.2}Research Status of Offline RL and Policy Robustness}{4}{section*.27}%
+\contentsline {subsection}{\numberline {1.2.3}Research Status of Representation Learning in RL}{4}{section*.30}%
+\contentsline {section}{\numberline {1.3}Main Research Content of the Thesis}{5}{section*.33}%
+\contentsline {section}{\numberline {1.4}Thesis Organization}{5}{section*.36}%
+\contentsline {chapter}{\numberline {2}Related Theory and Technology}{6}{section*.39}%
+\contentsline {section}{\numberline {2.1}Fundamental Theory of Reinforcement Learning and Continuous Control}{6}{section*.42}%
+\contentsline {subsection}{\numberline {2.1.1}Markov Decision Process and Partially Observable Markov Decision Process}{6}{section*.45}%
+\contentsline {subsection}{\numberline {2.1.2}Actor-Critic Architecture}{8}{section*.48}%
+\contentsline {subsection}{\numberline {2.1.3}Maximum Entropy Reinforcement Learning and Soft Actor-Critic}{10}{section*.51}%
+\contentsline {section}{\numberline {2.2}Offline Reinforcement Learning and Conservative Value Estimation}{12}{section*.54}%
+\contentsline {subsection}{\numberline {2.2.1}Offline Reinforcement Learning Paradigm and Distribution Shift}{12}{section*.57}%
+\contentsline {subsection}{\numberline {2.2.2}Implicit Q-Learning}{14}{section*.60}%
+\contentsline {section}{\numberline {2.3}Representation Learning Mechanisms under Complex Observations}{17}{section*.63}%
+\contentsline {subsection}{\numberline {2.3.1}Visual Reinforcement Learning and Data Augmentation Representation}{17}{section*.66}%
+\contentsline {subsection}{\numberline {2.3.2}Masked Modeling and Self-Supervised Feature Reconstruction}{19}{section*.69}%
+\contentsline {chapter}{\numberline {3}Algorithm and Code}{22}{section*.72}%
+\contentsline {section}{\numberline {3.1}Algorithm}{22}{section*.75}%
+\contentsline {section}{\numberline {3.2}Input codes}{24}{section*.82}%
+\contentsline {chapter}{\numberline {4}Crossreferences}{27}{section*.86}%
+\contentsline {section}{\numberline {4.1}Ref equations, tables or figures}{27}{section*.89}%
+\contentsline {subsection}{\numberline {4.1.1}Ref equations}{27}{section*.92}%
+\contentsline {subsection}{\numberline {4.1.2}Ref other floatings}{27}{section*.95}%
+\contentsline {section}{\numberline {4.2}References}{27}{section*.98}%
+\contentsline {chapter}{\numberline {5}Requirements of other parts}{29}{section*.101}%
+\contentsline {section}{\numberline {5.1}Abstracts}{29}{section*.104}%
+\contentsline {section}{\numberline {5.2}Glossary}{30}{section*.107}%
+\contentsline {section}{\numberline {5.3}Achievements}{30}{section*.110}%
+\contentsline {section}{\numberline {5.4}Decisions}{31}{section*.113}%
+\contentsline {chapter}{\numberline {6}Loaded Packages}{32}{section*.116}%
+\contentsline {chapter}{Acknowledgements}{33}{section*.119}%
+\contentsline {chapter}{References}{34}{section*.122}%
+\contentsline {chapter}{Appendices}{35}{section*.125}%
+\contentsline {chapter}{Achievements}{36}{section*.140}%
+\contentsline {chapter}{Decision of Defense Committee}{38}{section*.143}%
+\contentsline {chapter}{General Reviewers List}{39}{section*.147}%

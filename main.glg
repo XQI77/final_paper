@@ -1,0 +1,57 @@
+;; This logfile was generated automatically by `xindy'
+;; at 12.03.2026  01:02:03
+;; Indexstyle: "D:\\±œ…Ë\\25qiu\\final_paper\\XJTU-thesis-dev\\fn4jN0_PMU", Rawindex: "D:\\±œ…Ë\\25qiu\\final_paper\\XJTU-thesis-dev\\f1WPgWqyFT", Output: "main.gls"
+
+
+Building indexentry-tree:
+Hierdepth of index is :TREE
+
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+
+Forming letter-groups:
+Letter-group: "Ü_Â" -> "C"
+Letter-group: "Ü–" -> "C"
+Letter-group: "¥Âª" -> "L"
+Letter-group: "¥®º‡Î" -> "L"
+Letter-group: "ç" -> "D"
+Letter-group: "ç_ó" -> "D"
+Letter-group: "¥" -> "L"
+Letter-group: "º" -> "N"
+Letter-group: " " -> "Q"
+Letter-group: " _º" -> "Q"
+Letter-group: "Àó" -> "R"
+Letter-group: "–_ " -> "S"
+Letter-group: "Â" -> "V"
+Letter-group: "Î" -> "X"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: "Ü_Â" -> "C"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: "ç" -> "D"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: "¥" -> "L"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: "º" -> "N"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: " " -> "Q"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: "Àó" -> "R"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: "–_ " -> "S"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: "Â" -> "V"
+sort-indexentries: (FORWARD BACKWARD FORWARD FORWARD)
+Letter-group: "Î" -> "X"
+Reading raw-index "D:\\±œ…Ë\\25qiu\\final_paper\\XJTU-thesis-dev\\f1WPgWqyFT"...WARNING: location-reference "{}{I}" did match multiple location-classes! (taking first one)
