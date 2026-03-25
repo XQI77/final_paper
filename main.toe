@@ -1,42 +1,65 @@
 \contentsline {chapter}{ABSTRACT (Chinese)}{I}{section*.3}%
 \contentsline {chapter}{ABSTRACT (English)}{III}{section*.6}%
-\contentsline {chapter}{Glossary}{IX}{section*.10}%
-\contentsline {chapter}{\numberline {1}Introduction}{1}{section*.15}%
-\contentsline {section}{\numberline {1.1}Research Background and Significance}{1}{section*.18}%
-\contentsline {section}{\numberline {1.2}Research Status at Home and Abroad}{3}{section*.21}%
-\contentsline {subsection}{\numberline {1.2.1}Research Status of Visual RL and Data Augmentation}{3}{section*.24}%
-\contentsline {subsection}{\numberline {1.2.2}Research Status of Offline RL and Policy Robustness}{4}{section*.27}%
-\contentsline {subsection}{\numberline {1.2.3}Research Status of Representation Learning in RL}{4}{section*.30}%
-\contentsline {section}{\numberline {1.3}Main Research Content of the Thesis}{5}{section*.33}%
-\contentsline {section}{\numberline {1.4}Thesis Organization}{5}{section*.36}%
-\contentsline {chapter}{\numberline {2}Related Theory and Technology}{6}{section*.39}%
-\contentsline {section}{\numberline {2.1}Fundamental Theory of Reinforcement Learning and Continuous Control}{6}{section*.42}%
-\contentsline {subsection}{\numberline {2.1.1}Markov Decision Process and Partially Observable Markov Decision Process}{6}{section*.45}%
-\contentsline {subsection}{\numberline {2.1.2}Actor-Critic Architecture}{8}{section*.48}%
-\contentsline {subsection}{\numberline {2.1.3}Maximum Entropy Reinforcement Learning and Soft Actor-Critic}{10}{section*.51}%
-\contentsline {section}{\numberline {2.2}Offline Reinforcement Learning and Conservative Value Estimation}{12}{section*.54}%
-\contentsline {subsection}{\numberline {2.2.1}Offline Reinforcement Learning Paradigm and Distribution Shift}{12}{section*.57}%
-\contentsline {subsection}{\numberline {2.2.2}Implicit Q-Learning}{14}{section*.60}%
-\contentsline {section}{\numberline {2.3}Representation Learning Mechanisms under Complex Observations}{17}{section*.63}%
-\contentsline {subsection}{\numberline {2.3.1}Visual Reinforcement Learning and Data Augmentation Representation}{17}{section*.66}%
-\contentsline {subsection}{\numberline {2.3.2}Masked Modeling and Self-Supervised Feature Reconstruction}{19}{section*.69}%
-\contentsline {chapter}{\numberline {3}Algorithm and Code}{22}{section*.72}%
-\contentsline {section}{\numberline {3.1}Algorithm}{22}{section*.75}%
-\contentsline {section}{\numberline {3.2}Input codes}{24}{section*.82}%
-\contentsline {chapter}{\numberline {4}Crossreferences}{27}{section*.86}%
-\contentsline {section}{\numberline {4.1}Ref equations, tables or figures}{27}{section*.89}%
-\contentsline {subsection}{\numberline {4.1.1}Ref equations}{27}{section*.92}%
-\contentsline {subsection}{\numberline {4.1.2}Ref other floatings}{27}{section*.95}%
-\contentsline {section}{\numberline {4.2}References}{27}{section*.98}%
-\contentsline {chapter}{\numberline {5}Requirements of other parts}{29}{section*.101}%
-\contentsline {section}{\numberline {5.1}Abstracts}{29}{section*.104}%
-\contentsline {section}{\numberline {5.2}Glossary}{30}{section*.107}%
-\contentsline {section}{\numberline {5.3}Achievements}{30}{section*.110}%
-\contentsline {section}{\numberline {5.4}Decisions}{31}{section*.113}%
-\contentsline {chapter}{\numberline {6}Loaded Packages}{32}{section*.116}%
-\contentsline {chapter}{Acknowledgements}{33}{section*.119}%
-\contentsline {chapter}{References}{34}{section*.122}%
-\contentsline {chapter}{Appendices}{35}{section*.125}%
-\contentsline {chapter}{Achievements}{36}{section*.140}%
-\contentsline {chapter}{Decision of Defense Committee}{38}{section*.143}%
-\contentsline {chapter}{General Reviewers List}{39}{section*.147}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{section*.11}%
+\contentsline {section}{\numberline {1.1}Research Background and Significance}{1}{section*.14}%
+\contentsline {section}{\numberline {1.2}Research Status at Home and Abroad}{3}{section*.17}%
+\contentsline {section}{\numberline {1.3}Main Research Content of the Thesis}{5}{section*.20}%
+\contentsline {section}{\numberline {1.4}Thesis Organization}{6}{section*.23}%
+\contentsline {chapter}{\numberline {2}Theoretical Foundations}{7}{section*.26}%
+\contentsline {section}{\numberline {2.1}Fundamentals of Reinforcement Learning}{7}{section*.29}%
+\contentsline {subsection}{\numberline {2.1.1}Overview}{7}{section*.32}%
+\contentsline {subsection}{\numberline {2.1.2}Markov Decision Process}{7}{section*.35}%
+\contentsline {subsection}{\numberline {2.1.3}Actor-Critic Method}{9}{section*.40}%
+\contentsline {subsection}{\numberline {2.1.4}Soft Actor-Critic}{9}{section*.43}%
+\contentsline {section}{\numberline {2.2}Offline Reinforcement Learning}{11}{section*.48}%
+\contentsline {subsection}{\numberline {2.2.1}Overview}{11}{section*.51}%
+\contentsline {subsection}{\numberline {2.2.2}Distribution Shift}{11}{section*.56}%
+\contentsline {subsection}{\numberline {2.2.3}Implicit Q-Learning}{12}{section*.59}%
+\contentsline {section}{\numberline {2.3}Representation Learning Methods}{13}{section*.62}%
+\contentsline {subsection}{\numberline {2.3.1}Overview}{13}{section*.65}%
+\contentsline {subsection}{\numberline {2.3.2}Data Augmentation Representation}{13}{section*.68}%
+\contentsline {subsection}{\numberline {2.3.3}Masked Self-Supervised Learning}{14}{section*.71}%
+\contentsline {section}{\numberline {2.4}Chapter Summary}{15}{section*.76}%
+\contentsline {chapter}{\numberline {3}Task-Perceptive Data Augmentation Selection for Visual Reinforcement Learning}{17}{section*.79}%
+\contentsline {section}{\numberline {3.1}Introduction}{17}{section*.82}%
+\contentsline {section}{\numberline {3.2}Algorithm Design}{18}{section*.85}%
+\contentsline {subsection}{\numberline {3.2.1}Compact Feature Extraction Module (Encoder)}{19}{section*.90}%
+\contentsline {subsection}{\numberline {3.2.2}Probability Prediction Module (Choose Module)}{20}{section*.93}%
+\contentsline {subsection}{\numberline {3.2.3}Asymmetric Policy Optimization}{22}{section*.96}%
+\contentsline {section}{\numberline {3.3}Algorithm Implementation}{24}{section*.99}%
+\contentsline {section}{\numberline {3.4}Experiments and Evaluation}{26}{section*.104}%
+\contentsline {subsection}{\numberline {3.4.1}Experimental Environment and Hyperparameter Configuration}{26}{section*.107}%
+\contentsline {subsection}{\numberline {3.4.2}Sample Efficiency and Training Stability Analysis}{28}{section*.114}%
+\contentsline {subsection}{\numberline {3.4.3}Cross-Environment Generalization Performance Evaluation}{29}{section*.119}%
+\contentsline {subsection}{\numberline {3.4.4}Ablation Study}{33}{section*.132}%
+\contentsline {section}{\numberline {3.5}Chapter Summary}{35}{section*.143}%
+\contentsline {chapter}{\numberline {4}Robust Offline Reinforcement Learning via Masked Reconstruction}{37}{section*.146}%
+\contentsline {section}{\numberline {4.1}Introduction}{37}{section*.149}%
+\contentsline {section}{\numberline {4.2}Algorithm Architecture for Masked Observations}{39}{section*.154}%
+\contentsline {subsection}{\numberline {4.2.1}Overall Architecture Design}{39}{section*.157}%
+\contentsline {subsection}{\numberline {4.2.2}Robust Masked Representation Learning Module}{40}{section*.160}%
+\contentsline {subsection}{\numberline {4.2.3}Lightweight History Window Aggregation Module}{43}{section*.163}%
+\contentsline {subsection}{\numberline {4.2.4}Two-Phase Decoupled Training Framework}{44}{section*.166}%
+\contentsline {section}{\numberline {4.3}Algorithm Implementation}{45}{section*.173}%
+\contentsline {subsection}{\numberline {4.3.1}Optimization Objectives for Representation Learning}{45}{section*.176}%
+\contentsline {subsection}{\numberline {4.3.2}Implicit Offline Policy Evaluation}{46}{section*.179}%
+\contentsline {subsection}{\numberline {4.3.3}Gradient Decoupling Mechanism}{48}{section*.184}%
+\contentsline {section}{\numberline {4.4}Experiments and Evaluation}{49}{section*.187}%
+\contentsline {subsection}{\numberline {4.4.1}Experimental Setup}{49}{section*.190}%
+\contentsline {subsection}{\numberline {4.4.2}Generalization under Dynamical Missing Scenarios}{50}{section*.199}%
+\contentsline {subsection}{\numberline {4.4.3}Generalization under Factor Reduction Scenarios}{53}{section*.206}%
+\contentsline {subsection}{\numberline {4.4.4}Ablation Study}{54}{section*.213}%
+\contentsline {section}{\numberline {4.5}Chapter Summary}{56}{section*.220}%
+\contentsline {chapter}{\numberline {5}Conclusion and Future Work}{58}{section*.223}%
+\contentsline {section}{\numberline {5.1}Summary}{58}{section*.226}%
+\contentsline {section}{\numberline {5.2}Future Work}{59}{section*.229}%
+\contentsline {subsection}{\numberline {5.2.1}Extensions of PICK}{59}{section*.232}%
+\contentsline {subsection}{\numberline {5.2.2}Extensions of Masked-IQL}{59}{section*.235}%
+\contentsline {subsection}{\numberline {5.2.3}Unified Perspective on Future Directions}{60}{section*.238}%
+\contentsline {chapter}{\numberline {6}Loaded Packages}{61}{section*.241}%
+\contentsline {chapter}{Acknowledgements}{62}{section*.244}%
+\contentsline {chapter}{References}{63}{section*.247}%
+\contentsline {chapter}{Appendices}{67}{section*.250}%
+\contentsline {chapter}{Achievements}{68}{section*.265}%
+\contentsline {chapter}{Decision of Defense Committee}{70}{section*.268}%
+\contentsline {chapter}{General Reviewers List}{71}{section*.272}%

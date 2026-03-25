@@ -1,442 +1,181 @@
 % !TeX root = ../main.tex
 
-\xchapter{相关理论与技术}{Related Theory and Technology}
+\xchapter{理论基础}{Theoretical Foundations}
 
-\xsection{强化学习与连续控制基础理论}{Fundamental Theory of Reinforcement Learning and Continuous Control}
+\xsection{强化学习基础}{Fundamentals of Reinforcement Learning}
 
-强化学习（Reinforcement Learning, RL）是机器学习的重要分支，旨在研究智能体（Agent）如何通过与环境（Environment）的序贯交互，依据累积奖励信号逐步习得使长期回报最大化的最优决策策略。本节将系统阐述连续控制场景下强化学习的核心数学框架：首先定义马尔可夫决策过程及其在部分可观测情形下的扩展形式，继而从策略梯度定理出发推导 Actor-Critic 架构的理论依据，最后深入剖析最大熵强化学习框架及 Soft Actor-Critic 算法的核心机制，为后续章节的算法设计与表征优化提供理论基石。
+\xsubsection{概述}{Overview}
 
-\xsubsection{马尔可夫决策过程与部分可观测马尔可夫决策过程}{Markov Decision Process and Partially Observable Markov Decision Process}
+强化学习\cite{liu2018survey}（Reinforcement Learning, RL）是机器学习的重要分支，其核心思想在于智能体通过与环境不断交互试错来学习最优策略。与监督学习\cite{yin2016survey}依赖标注数据、无监督学习关注数据内在结构不同，强化学习通过环境反馈的奖励信号驱动策略优化，能够处理需要序贯决策的复杂任务。早期的强化学习方法主要针对状态空间和动作空间均有限的离散问题，依赖表格化的价值函数进行精确求解。随着深度学习的兴起，以 DQN\cite{mnih2015human} 为标志，深度神经网络被引入作为值函数和策略的函数逼近器，使得强化学习得以扩展至高维状态空间和动作空间，并在机器人控制、游戏博弈和自动驾驶等领域展现出良好的应用前景。
 
-\textbf{马尔可夫决策过程}
+从方法论角度，深度强化学习算法可分为三类：基于值函数的方法（如 DQN）通过估计状态或状态-动作价值函数隐式导出策略，适用于离散动作空间；基于策略梯度的方法（如 REINFORCE）直接参数化策略并通过梯度上升优化，可处理连续动作空间但梯度方差较高；Actor-Critic 方法将两者结合，利用值函数为策略梯度提供低方差信号，已成为连续控制领域的主流范式。本节将从马尔可夫决策过程出发，阐述 Actor-Critic 架构及其代表性算法 Soft Actor-Critic 的核心原理。
 
-强化学习问题的标准数学抽象为马尔可夫决策过程（Markov Decision Process, MDP）。一个完整的 MDP 由五元组 $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$ 严格定义，各分量含义如下：
-\begin{itemize}
-    \item $\mathcal{S}$ 为状态空间（State Space），表示环境中所有可能状态的集合。在连续控制任务中，$\mathcal{S} \subseteq \mathbb{R}^n$ 通常为高维连续空间，描述系统的完整物理配置（如关节角度、速度、接触力等）。
-    \item $\mathcal{A}$ 为动作空间（Action Space），表示智能体可执行动作的集合。连续控制任务中，$\mathcal{A} \subseteq \mathbb{R}^m$ 为连续向量空间，对应电机力矩或关节速度等控制指令。
-    \item $\mathcal{P}: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to [0, 1]$ 为状态转移概率函数，$\mathcal{P}(s' \mid s, a)$ 描述智能体在状态 $s \in \mathcal{S}$ 执行动作 $a \in \mathcal{A}$ 后转移至状态 $s' \in \mathcal{S}$ 的概率，刻画了环境的随机动力学特性。
-    \item $\mathcal{R}: \mathcal{S} \times \mathcal{A} \to \mathbb{R}$ 为奖励函数，$r(s, a) = \mathcal{R}(s, a)$ 定义了智能体在状态 $s$ 下执行动作 $a$ 所获得的即时标量反馈，是引导策略优化的核心信号。
-    \item $\gamma \in [0, 1)$ 为折扣因子（Discount Factor），用于权衡未来奖励与即时奖励的相对重要性，同时确保无限时域下累积回报的数学收敛性。
-\end{itemize}
+\xsubsection{马尔可夫决策过程}{Markov Decision Process}
 
-MDP 的核心假设为马尔可夫性质（Markov Property）：系统下一状态的条件概率分布仅依赖于当前状态与动作，而与历史轨迹无关，即
+马尔可夫决策过程（Markov Decision Process, MDP）是对序贯决策问题的标准数学抽象，也是几乎所有强化学习算法的理论基石。一个完整的 MDP 由五元组 $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$ 定义，其中 $\mathcal{S}$ 为状态空间，$\mathcal{A}$ 为动作空间，$\mathcal{P}(s' \mid s, a)$ 为状态转移概率函数，$\mathcal{R}(s, a)$ 为奖励函数，$\gamma \in [0, 1)$ 为折扣因子。在连续控制任务中，$\mathcal{S} \subseteq \mathbb{R}^n$、$\mathcal{A} \subseteq \mathbb{R}^m$ 通常为高维连续空间，分别对应系统的物理配置（关节角度、速度等）和控制指令（电机力矩等）。MDP 的核心假设为马尔可夫性质，即系统下一状态的条件概率分布仅依赖于当前状态与动作：
 \begin{equation}
     \mathcal{P}(s_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \ldots, s_0, a_0) = \mathcal{P}(s_{t+1} \mid s_t, a_t)
 \end{equation}
-
-在每一时间步 $t$，智能体观测到当前状态 $s_t$，依据策略 $\pi: \mathcal{S} \to \Delta(\mathcal{A})$ 选择动作 $a_t \sim \pi(\cdot \mid s_t)$（其中 $\Delta(\mathcal{A})$ 表示 $\mathcal{A}$ 上的概率单纯形），环境转移至新状态 $s_{t+1} \sim \mathcal{P}(\cdot \mid s_t, a_t)$ 并产生即时奖励 $r_t = r(s_t, a_t)$。智能体的优化目标是寻找最优策略 $\pi^*$，使得折扣累积期望回报最大化：
+在每一时间步 $t$，智能体观测当前状态 $s_t$，依据策略 $\pi(\cdot \mid s_t)$ 选择动作 $a_t$，环境转移至新状态 $s_{t+1} \sim \mathcal{P}(\cdot \mid s_t, a_t)$ 并产生即时奖励 $r_t = \mathcal{R}(s_t, a_t)$。智能体的优化目标是寻找最优策略 $\pi^*$，使折扣累积期望回报最大化：
 \begin{equation}
     J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ \sum_{t=0}^{\infty} \gamma^t r(s_t, a_t) \right]
 \end{equation}
-其中，$\tau = (s_0, a_0, s_1, a_1, \ldots)$ 为策略 $\pi$ 与环境交互产生的轨迹（Trajectory）。
-
-为评估策略的优劣，定义状态价值函数（State Value Function）$V^\pi: \mathcal{S} \to \mathbb{R}$ 与动作价值函数（Action-Value Function）$Q^\pi: \mathcal{S} \times \mathcal{A} \to \mathbb{R}$：
-\begin{equation}
-    V^\pi(s) = \mathbb{E}_{\pi} \left[ \sum_{k=0}^{\infty} \gamma^k r_{t+k} \;\middle|\; s_t = s \right]
-\end{equation}
-\begin{equation}
-    Q^\pi(s, a) = \mathbb{E}_{\pi} \left[ \sum_{k=0}^{\infty} \gamma^k r_{t+k} \;\middle|\; s_t = s,\, a_t = a \right]
-\end{equation}
-
-两者之间满足 $V^\pi(s) = \mathbb{E}_{a \sim \pi(\cdot|s)}[Q^\pi(s, a)]$。根据动态规划原理，$Q^\pi$ 满足贝尔曼期望方程（Bellman Expectation Equation）：
+其中 $\tau = (s_0, a_0, s_1, a_1, \ldots)$ 为策略与环境交互产生的轨迹。为评估策略的优劣，可定义状态价值函数 $V^\pi(s)$ 和动作价值函数 $Q^\pi(s, a)$，两者满足 $V^\pi(s) = \mathbb{E}_{a \sim \pi(\cdot|s)}[Q^\pi(s, a)]$。根据动态规划原理，$Q^\pi$ 满足贝尔曼期望方程：
 \begin{equation}
     Q^\pi(s, a) = \mathbb{E}_{s' \sim \mathcal{P}(\cdot|s,a)} \left[ r(s, a) + \gamma \mathbb{E}_{a' \sim \pi(\cdot|s')} \left[ Q^\pi(s', a') \right] \right]
 \end{equation}
+此递归关系构成了时序差分（Temporal Difference, TD）学习的理论基础，使得在线和离线强化学习算法均可在有限样本下高效学习。
 
-此递归关系构成了基于时序差分（Temporal Difference, TD）学习的理论基础，同时也是 Critic 网络参数更新的核心依据。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{c2/马尔可夫决策过程.jpg}
+    \caption{马尔可夫决策过程示意图。智能体在每个时间步 $t$ 根据策略 $\pi(A_t|S_t)$ 从候选动作中选择最优动作 $A_t$，环境转移至新状态 $S_{t+1}$ 并产生奖励 $R_{t+1}$，该过程沿时间轴持续进行。}
+    \label{fig:mdp}
+\end{figure}
 
-\textbf{部分可观测马尔可夫决策过程}
-
-标准 MDP 假设智能体在每一时间步均可精确获得系统的完整状态 $s_t$。然而，在大量现实控制场景中，智能体仅能获取原始传感器数据（如图像像素、激光雷达点云或局部关节读数），这些数据往往只是真实系统状态的不完整投影，且可能包含噪声。此类场景更为精确的数学描述为部分可观测马尔可夫决策过程（Partially Observable Markov Decision Process, POMDP），由七元组 $\mathcal{M}_{\mathrm{po}} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \Omega, \mathcal{O}, \gamma \rangle$ 定义，其中 $\Omega$ 为观测空间（Observation Space），$\mathcal{O}: \mathcal{S} \times \mathcal{A} \to \Delta(\Omega)$ 为观测概率函数，$\mathcal{O}(o \mid s', a)$ 表示智能体执行动作 $a$ 并转移至状态 $s'$ 后获得观测 $o \in \Omega$ 的概率。
-
-在 POMDP 中，观测 $o_t$ 与状态 $s_t$ 的本质区别在于：$s_t$ 包含完整刻画系统动力学所需的全部信息，而 $o_t$ 仅为 $s_t$ 的一个条件采样，即
+然而，标准 MDP 假设智能体在每一时间步均可精确获得完整状态 $s_t$，在大量现实控制场景中这一假设并不成立。当智能体仅能获取原始传感器数据时，观测往往只是真实状态的不完整投影，此类场景需以部分可观测马尔可夫决策过程（Partially Observable MDP, POMDP）来描述。POMDP 在 MDP 基础上新增观测空间 $\Omega$ 和观测概率函数 $\mathcal{O}(o \mid s', a)$，由于观测 $o_t$ 无法唯一确定底层状态 $s_t$，智能体必须依赖历史交互序列推断状态的后验分布。在众多 POMDP 实例中，一类具有广泛实际意义的特殊形式是掩码部分可观测\cite{gu2023order}：系统状态的各维度并非被噪声失真，而是被结构性地遮蔽或丢失。引入二值掩码变量 $m_t \in \{0, 1\}^d$，观测退化为确定性的逐元素乘积：
 \begin{equation}
-    o_t \sim \mathcal{O}(\cdot \mid s_t, a_{t-1})
+    o_t = s_t \odot m_t
 \end{equation}
+其中 $\odot$ 为哈达玛积。这一模型精确刻画了传感器老化、通信丢包以及环境遮蔽等物理场景。上述分析表明，在部分可观测场景下，有效的状态表征是算法性能的关键瓶颈，这一需求构成了后文引入自监督表示学习技术的理论出发点。MDP 为强化学习提供了数学基础，但连续控制任务中策略的参数化与优化需要更高效的算法架构，下一节将介绍 Actor-Critic 方法。
 
-由于 $o_t$ 无法唯一确定 $s_t$，智能体必须依赖历史交互序列 $h_t = (o_0, a_0, o_1, a_1, \ldots, o_t)$ 来推断状态的后验分布。这一推断在数学上以信念状态（Belief State）$b_t \in \Delta(\mathcal{S})$ 表示：
-\begin{equation}
-    b_t(s) = \mathcal{P}(s_t = s \mid h_t)
-\end{equation}
+\xsubsection{Actor-Critic 方法}{Actor-Critic Method}
 
-信念状态依据贝叶斯滤波（Bayesian Filtering）递归更新：
-\begin{equation}
-    b_{t+1}(s') = \eta \cdot \mathcal{O}(o_{t+1} \mid s', a_t) \sum_{s \in \mathcal{S}} \mathcal{P}(s' \mid s, a_t)\, b_t(s)
-\end{equation}
-其中，$\eta$ 为归一化常数，确保 $b_{t+1}$ 在状态空间上积分为 1。
-
-以基于图像的视觉控制任务为例，真实状态 $s_t$ 包含机器人的完整关节配置与速度信息，而智能体仅能获取 RGB 图像 $o_t \in \mathbb{R}^{H \times W \times 3}$。单帧图像不仅无法反映速度等动态量，还可能受到遮挡、光照变化与传感器噪声的影响。这一"状态不确定性"（State Uncertainty）使得直接将 $o_t$ 代入为 MDP 中的 $s_t$ 存在根本性的理论缺陷：策略 $\pi(a \mid o_t)$ 所依赖的信息量不足以满足马尔可夫性质，进而导致值函数估计的系统性偏差与策略收敛性能的下降。
-
-上述分析表明，在部分可观测场景下，有效的状态表征（State Representation）是算法性能的关键瓶颈：一方面，需要从高维观测中提取紧凑而充分的特征；另一方面，需要跨时间步聚合历史信息以近似马尔可夫状态。这一内在需求为后文引入自监督表示学习与序列建模技术提供了直接的理论动机。
-
-\xsubsection{Actor-Critic 架构}{Actor-Critic Architecture}
-
-Actor-Critic 架构是连续动作空间控制任务中最为主流的深度强化学习范式之一。其理论基础源于策略梯度定理（Policy Gradient Theorem），通过将策略优化（Actor）与值函数估计（Critic）相解耦，在保留策略梯度方法灵活性的同时，系统性地降低了梯度估计的方差。
-
-\textbf{策略梯度定理}
-
-设参数化随机策略为 $\pi_\theta(a \mid s)$，其中 $\theta$ 为可学习参数。策略的优化目标为最大化期望回报：
-\begin{equation}
-    J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^{\infty} \gamma^t r(s_t, a_t) \right] = \mathbb{E}_{s \sim d^{\pi_\theta}} \left[ V^{\pi_\theta}(s) \right]
-\end{equation}
-其中，$d^{\pi_\theta}(s) = \sum_{t=0}^{\infty} \gamma^t \mathcal{P}(s_t = s \mid \pi_\theta)$ 为策略 $\pi_\theta$ 诱导的折扣状态访问分布（Discounted State Visitation Distribution）。
-
-策略梯度定理给出了目标函数关于策略参数的解析梯度形式。利用对数导数技巧（Log-Derivative Trick）展开，并结合贝尔曼方程递归代入，可严格推导得：
+在连续动作空间中，基于值函数的方法因需要对动作空间取最大值而难以直接应用，策略梯度方法由此成为主流选择。Actor-Critic 架构通过将策略优化与值函数估计相结合，利用 Critic 提供的低方差梯度信号指导 Actor 的参数更新，有效缓解了纯策略梯度方法的高方差问题。设参数化随机策略为 $\pi_\theta(a \mid s)$，策略梯度定理给出目标函数关于策略参数的解析梯度：
 \begin{equation}
     \nabla_\theta J(\theta) = \mathbb{E}_{s \sim d^{\pi_\theta},\, a \sim \pi_\theta(\cdot|s)} \left[ \nabla_\theta \log \pi_\theta(a \mid s) \cdot Q^{\pi_\theta}(s, a) \right]
 \end{equation}
-
-此公式的核心意义在于：无需对环境动力学 $\mathcal{P}$ 求导，梯度仅通过对策略的微分即可获得，从而使得策略梯度方法在模型未知的情形下依然适用。
-
-\textbf{基线方差缩减与优势函数}
-
-直接使用 $Q^{\pi_\theta}(s, a)$ 作为梯度权重的 REINFORCE 算法，尽管在期望意义下无偏，但 $Q$ 值的绝对量级差异较大，导致梯度估计具有极高方差，使训练不稳定。策略梯度定理允许在不改变梯度期望值的前提下，引入任意与动作 $a$ 无关的基线函数 $b(s)$：
-\begin{equation}
-    \nabla_\theta J(\theta) = \mathbb{E}_{s \sim d^{\pi_\theta},\, a \sim \pi_\theta(\cdot|s)} \left[ \nabla_\theta \log \pi_\theta(a \mid s) \cdot \left( Q^{\pi_\theta}(s, a) - b(s) \right) \right]
-\end{equation}
-
-基线不改变梯度期望的无偏性由下式保证：
-\begin{equation}
-    \mathbb{E}_{a \sim \pi_\theta(\cdot|s)} \left[ \nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s) \right] = b(s)\, \nabla_\theta \underbrace{\sum_{a} \pi_\theta(a \mid s)}_{=\,1} = 0
-\end{equation}
-
-选取 $b(s) = V^{\pi_\theta}(s)$ 可将梯度方差缩减至接近理论下界。此时，梯度权重退化为优势函数（Advantage Function）：
+其中 $d^{\pi_\theta}(s)$ 为策略诱导的折扣状态访问分布。引入状态价值函数 $V^{\pi_\theta}(s)$ 作为基线函数可将梯度方差降至接近理论下界，此时梯度权重退化为优势函数：
 \begin{equation}
     A^{\pi_\theta}(s, a) = Q^{\pi_\theta}(s, a) - V^{\pi_\theta}(s)
 \end{equation}
+优势函数衡量动作 $a$ 相较于策略平均水平的额外收益，$A > 0$ 时策略增大该动作概率，$A < 0$ 时降低其概率，从而实现精确的信用分配。
 
-$A^{\pi_\theta}(s, a)$ 的物理含义为：在状态 $s$ 下执行动作 $a$ 相较于当前策略的平均水平所带来的额外收益。当 $A > 0$ 时，该动作优于平均，策略应增大其选择概率；当 $A < 0$ 时，策略应降低其概率，从而实现精确的信用分配（Credit Assignment）。
-
-\textbf{Actor-Critic 的双网络协同优化}
-
-Actor-Critic 架构通过引入两个独立的参数化网络，将策略优化与值函数估计解耦：
-\begin{itemize}
-    \item \textbf{Actor 网络} $\pi_\theta(a \mid s)$：参数化随机策略，负责生成动作。在连续控制中，通常输出高斯分布的均值 $\mu_\theta(s)$ 与标准差 $\sigma_\theta(s)$，即 $a \sim \mathcal{N}(\mu_\theta(s), \sigma_\theta^2(s)\mathbf{I})$。
-    \item \textbf{Critic 网络} $V_\phi(s)$ 或 $Q_\phi(s, a)$：参数化值函数，负责估计当前策略的回报预期，为 Actor 提供低方差的梯度信号。
-\end{itemize}
-
-Critic 通过最小化时序差分误差进行参数更新，以单步 TD 为例，其损失函数定义为：
+Actor-Critic 架构据此引入两个独立的参数化网络：Actor 网络 $\pi_\theta(a \mid s)$ 负责生成动作，Critic 网络 $V_\phi(s)$ 或 $Q_\phi(s, a)$ 负责估计回报预期并为 Actor 提供低方差梯度信号。Critic 通过最小化时序差分误差更新参数：
 \begin{equation}
     L_{\mathrm{critic}}(\phi) = \mathbb{E}_{(s_t, a_t, r_t, s_{t+1}) \sim \mathcal{D}} \left[ \left( V_\phi(s_t) - \left( r_t + \gamma V_{\bar{\phi}}(s_{t+1}) \right) \right)^2 \right]
 \end{equation}
-其中，$V_{\bar{\phi}}$ 表示目标网络（Target Network），其参数通过指数移动平均缓慢跟踪 $\phi$，以稳定自举（Bootstrapping）过程。Actor 利用 Critic 估计的优势函数执行策略梯度更新：
-\begin{equation}
-    \nabla_\theta J(\theta) \approx \mathbb{E}_{(s_t, a_t) \sim \mathcal{D}} \left[ \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \hat{A}(s_t, a_t) \right]
-\end{equation}
-其中，$\hat{A}(s_t, a_t) = r_t + \gamma V_{\bar{\phi}}(s_{t+1}) - V_\phi(s_t)$ 为 TD 残差对优势函数的单步估计。
+其中 $V_{\bar{\phi}}$ 为目标网络，参数通过指数移动平均 $\bar{\phi} \leftarrow \rho \bar{\phi} + (1-\rho)\phi$ 缓慢跟踪以稳定自举过程。Actor-Critic 架构的优势在于将高方差的蒙特卡洛回报估计替换为低方差的自举估计，在样本效率与估计精度之间取得有效平衡。然而，早期的 Actor-Critic 算法\cite{lillicrap2015continuous}\cite{fujimoto2018addressing}（如 DDPG、TD3）采用确定性策略，探索能力依赖于外部注入的动作噪声，对超参数较为敏感，且 Critic 的估计质量直接制约策略的收敛性能。
 
-Actor-Critic 架构的本质贡献在于将高方差的蒙特卡洛回报估计替换为低方差的自举估计，在样本效率与估计精度之间取得有效平衡。然而，该架构中 Critic 网络的估计质量直接制约着 Actor 梯度信号的可靠性：若 Critic 基于不充分的状态表征进行值函数估计，则梯度偏差将直接损害策略的收敛性能。这一依赖关系深刻揭示了表征质量对整体算法性能的核心影响。
+\xsubsection{SAC 算法}{Soft Actor-Critic}
 
-\xsubsection{最大熵强化学习与 Soft Actor-Critic 算法}{Maximum Entropy Reinforcement Learning and Soft Actor-Critic}
-
-\textbf{最大熵强化学习目标}
-
-标准强化学习仅优化期望累积回报，当策略趋于确定性时，智能体的探索能力随之退化，极易陷入局部最优。最大熵强化学习（Maximum Entropy Reinforcement Learning）在优化目标中引入策略熵正则项，将目标函数修正为：
-\begin{equation}
-    J_{\mathrm{MaxEnt}}(\pi) = \sum_{t=0}^{T} \mathbb{E}_{(s_t, a_t) \sim \rho_\pi} \left[ r(s_t, a_t) + \alpha \mathcal{H}\!\left( \pi(\cdot \mid s_t) \right) \right]
-\end{equation}
-其中，$\mathcal{H}(\pi(\cdot \mid s_t)) = -\mathbb{E}_{a \sim \pi(\cdot|s_t)}[\log \pi(a \mid s_t)]$ 为策略在状态 $s_t$ 下的香农熵（Shannon Entropy），$\rho_\pi(s_t, a_t)$ 为策略 $\pi$ 诱导的状态-动作边际分布，$\alpha > 0$ 为温度参数（Temperature Parameter），控制熵正则化的强度。将期望展开，目标函数等价地表示为：
+Soft Actor-Critic（SAC）\cite{haarnoja2018soft}基于最大熵强化学习框架，将策略的随机性纳入优化目标，在标准回报目标中引入策略熵正则项：
 \begin{equation}
     J_{\mathrm{MaxEnt}}(\pi) = \sum_{t=0}^{T} \mathbb{E}_{(s_t, a_t) \sim \rho_\pi} \left[ r(s_t, a_t) - \alpha \log \pi(a_t \mid s_t) \right]
 \end{equation}
-
-熵正则项的引入在理论上具有三重效应：其一，迫使策略在等效动作之间保持均匀分布，增强探索多样性；其二，使策略对奖励函数的微小扰动具有更强的鲁棒性；其三，为多峰奖励景观中的策略表示提供了自然的概率框架，有效防止策略过早收敛至次优确定性解。
-
-\textbf{软贝尔曼方程}
-
-在最大熵框架下，定义软状态价值函数（Soft State Value Function）$V^\pi_{\mathrm{soft}}$ 与软动作价值函数（Soft Q-Function）$Q^\pi_{\mathrm{soft}}$：
-\begin{equation}
-    V^\pi_{\mathrm{soft}}(s_t) = \mathbb{E}_{a \sim \pi(\cdot|s_t)} \left[ Q^\pi_{\mathrm{soft}}(s_t, a) - \alpha \log \pi(a \mid s_t) \right]
-\end{equation}
-\begin{equation}
-    Q^\pi_{\mathrm{soft}}(s_t, a_t) = r(s_t, a_t) + \gamma \,\mathbb{E}_{s_{t+1} \sim \mathcal{P}} \!\left[ V^\pi_{\mathrm{soft}}(s_{t+1}) \right]
-\end{equation}
-
-将两式联立，得到软 Q 函数所满足的软贝尔曼期望方程（Soft Bellman Expectation Equation）：
+其中 $\alpha > 0$ 为温度参数。熵正则项迫使策略在等效动作间保持分布均匀性以增强探索，同时使策略对奖励函数的微小扰动更加鲁棒。在该框架下，软贝尔曼期望方程可以表示为：
 \begin{equation}
     Q^\pi_{\mathrm{soft}}(s_t, a_t) = r(s_t, a_t) + \gamma \,\mathbb{E}_{\substack{s_{t+1} \sim \mathcal{P} \\ a_{t+1} \sim \pi}} \!\left[ Q^\pi_{\mathrm{soft}}(s_{t+1}, a_{t+1}) - \alpha \log \pi(a_{t+1} \mid s_{t+1}) \right]
 \end{equation}
+与标准贝尔曼方程的区别在于目标值额外包含策略熵项，使 Q 值同时反映动作回报潜力和策略的随机性。
 
-与标准贝尔曼方程相比，软贝尔曼方程在目标值中额外纳入了策略熵项，使得 Q 值在反映动作回报潜力的同时，亦对策略的随机性给予额外奖励。
-
-\textbf{SAC 算法的参数化与损失函数}
-
-Soft Actor-Critic（SAC）算法\cite{haarnoja2018soft}将最大熵强化学习框架与离策略（Off-Policy）深度学习相结合，通过维护两个 Critic 网络、一个 Actor 网络与对应的目标网络实现高效稳定的连续控制。
-
-\underline{Critic 损失函数}：SAC 采用双 Q 网络（Double Q-Network）结构以缓解值函数高估问题。参数分别为 $\theta_1$ 和 $\theta_2$ 的两个 Critic 网络的训练目标定义为：
-\begin{equation}
-    L_Q(\theta_i) = \mathbb{E}_{(s_t, a_t, r_t, s_{t+1}) \sim \mathcal{D}} \left[ \left( Q_{\theta_i}(s_t, a_t) - y_t \right)^2 \right], \quad i \in \{1, 2\}
-\end{equation}
-其中，TD 目标 $y_t$ 由目标网络（参数分别为 $\bar{\theta}_1$，$\bar{\theta}_2$）与当前策略联合确定：
+SAC 采用双 Q 网络结构缓解值函数高估问题，TD 目标由目标网络与当前策略联合确定：
 \begin{equation}
     y_t = r_t + \gamma \left( \min_{j \in \{1,2\}} Q_{\bar{\theta}_j}(s_{t+1}, \tilde{a}_{t+1}) - \alpha \log \pi_\phi(\tilde{a}_{t+1} \mid s_{t+1}) \right), \quad \tilde{a}_{t+1} \sim \pi_\phi(\cdot \mid s_{t+1})
 \end{equation}
-
-取两个目标网络 Q 值之最小值，有效抑制了函数逼近误差的累积传播，提升了 Critic 估计的保守性与训练稳定性。
-
-\underline{Actor 损失函数}：为使 Actor 能够在连续动作空间中进行梯度优化，SAC 采用重参数化技巧（Reparameterization Trick）。将动作 $\tilde{a}$ 表示为噪声变量 $\varepsilon$ 的确定性函数 $\tilde{a}_t = f_\phi(\varepsilon_t;\, s_t)$，其中 $\varepsilon_t \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$，$f_\phi$ 通常取压缩变换：
-\begin{equation}
-    \tilde{a}_t = \tanh\!\left( \mu_\phi(s_t) + \sigma_\phi(s_t) \odot \varepsilon_t \right)
-\end{equation}
-
-Actor 的训练目标为最小化以下损失：
+在 Actor 训练方面，SAC 采用重参数化技巧将动作表示为 $\tilde{a}_t = \tanh(\mu_\phi(s_t) + \sigma_\phi(s_t) \odot \varepsilon_t)$（其中 $\varepsilon_t \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$），Actor 损失为：
 \begin{equation}
     L_\pi(\phi) = \mathbb{E}_{s_t \sim \mathcal{D},\, \varepsilon_t \sim \mathcal{N}} \left[ \alpha \log \pi_\phi\!\left( f_\phi(\varepsilon_t;\, s_t) \mid s_t \right) - \min_{j \in \{1,2\}} Q_{\theta_j}\!\left( s_t,\, f_\phi(\varepsilon_t;\, s_t) \right) \right]
 \end{equation}
 
-通过重参数化，梯度可以直接从 Q 网络反向传播至 Actor 参数 $\phi$，将高方差的策略梯度估计转化为低方差的路径梯度估计，从而显著提升优化效率。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{c2/sac.png}
+    \caption{Soft Actor-Critic 算法架构。Actor 网络根据环境状态输出动作，Critic 网络估计状态-动作价值并通过 TD 误差信号指导 Actor 更新，熵正则项鼓励策略保持随机性以增强探索。}
+    \label{fig:sac}
+\end{figure}
 
-\underline{温度参数自适应调节}：SAC 将温度参数 $\alpha$ 视为可学习变量，通过最小化以下目标自动确定其值：
-\begin{equation}
-    L(\alpha) = \mathbb{E}_{a_t \sim \pi_\phi(\cdot|s_t)} \left[ -\alpha \log \pi_\phi(a_t \mid s_t) - \alpha \bar{\mathcal{H}} \right]
-\end{equation}
-其中，$\bar{\mathcal{H}}$ 为预设的目标熵，通常设为 $\bar{\mathcal{H}} = -\dim(\mathcal{A})$。当当前策略熵低于 $\bar{\mathcal{H}}$ 时，$\alpha$ 自动增大以加强探索；反之则减小以强化利用，实现了探索-利用权衡的动态自适应调节。
+SAC 通过自适应温度调节机制和双 Q 网络设计，在探索-利用权衡与值函数估计精度方面均优于 DDPG 和 TD3 等确定性策略算法，已成为连续控制领域应用最广泛的在线强化学习算法之一。然而，SAC 作为在线算法需要与环境持续交互以收集训练数据，在医疗决策、自动驾驶或工业控制等场景中，此类交互的代价极为高昂甚至存在安全风险。此外，SAC 的上述机制均以网络能够从输入观测中提取充分的状态表征为前提，在部分可观测场景下值函数估计精度将受到制约。这两个局限性分别引出了离线强化学习与表示学习的研究需求。
 
-\textbf{探索与利用权衡的数学本质}
+\xsection{离线强化学习}{Offline Reinforcement Learning}
 
-SAC 在探索-利用权衡（Exploration-Exploitation Trade-off）上的优越性，源自最大熵目标对最优策略解的结构性约束。可以证明，在最大熵框架下，最优软策略具有如下闭合形式：
-\begin{equation}
-    \pi^*_{\mathrm{soft}}(a \mid s) \propto \exp\!\left( \frac{1}{\alpha} Q^*_{\mathrm{soft}}(s, a) \right)
-\end{equation}
+\xsubsection{概述}{Overview}
 
-此结论表明，最优软策略本质上是软 Q 值的玻尔兹曼分布（Boltzmann Distribution）。当 $\alpha \to 0$ 时，策略退化为确定性贪婪策略，对应纯利用；当 $\alpha \to \infty$ 时，策略趋于均匀分布，对应纯探索。温度参数 $\alpha$ 在两极端之间连续插值，提供了比 $\varepsilon$-贪婪等启发式方法更为严格的数学基础，并赋予探索行为以明确的信息论意义。
+离线强化学习（Offline RL）\cite{zhan2022survey}旨在仅利用预先收集的静态数据集学习最优策略，无需与环境进行在线交互。与在线强化学习中智能体通过试错不断收集新数据不同，离线强化学习将策略学习建模为纯粹的数据驱动问题\cite{li2022offlinesurvey}，如图~\ref{fig:offrl}所示。这一范式的研究意义不仅在于规避在线交互的安全风险与高昂成本，也在于充分利用工业控制日志、人类操作记录和仿真数据等已有的历史数据资源。
 
-综上所述，SAC 通过最大熵目标、双 Q 网络估计与重参数化策略梯度的协同设计，在连续控制任务中实现了样本效率与训练稳定性的显著提升。然而，上述所有机制均建立在 Critic 和 Actor 网络能够从输入观测中提取高质量状态表征这一前提之上。在部分可观测场景下，若观测 $o_t$ 与真实状态 $s_t$ 之间存在较大的信息鸿沟，则值函数估计的精度与策略梯度的可靠性均将受到根本性制约。如何从高维、噪声观测中构建紧凑而充分的潜在状态表征，是提升上述算法在复杂视觉控制任务中性能的核心问题，这也正是本文后续章节所要深入探讨的主旨所在。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.55\textwidth]{c2/offrl.png}
+    \caption{离线强化学习范式示意图。与在线强化学习中智能体直接与环境交互不同，离线强化学习从预先收集的离线数据集中学习最优策略，无需与环境进行在线交互。}
+    \label{fig:offrl}
+\end{figure}
 
-\xsection{离线强化学习与保守价值评估}{Offline Reinforcement Learning and Conservative Value Estimation}
+然而，从在线到离线的范式转换带来了核心理论难题——分布偏移与外推误差。现有离线强化学习方法大致可分为两类：一类是以 BCQ\cite{fujimoto2019off} 和 BEAR\cite{kumar2019stabilizing} 为代表的策略约束方法，通过显式限制学习策略与行为策略之间的距离来避免选择分布外动作；另一类是以 CQL\cite{kumar2020conservative} 和 IQL\cite{kostrikov2021offline} 为代表的保守价值评估方法，通过修改值函数的训练目标使其对分布外区域产生保守估计。后者由于不直接约束策略形式，在优化灵活性方面具有一定优势。本节首先分析分布偏移问题的机理，随后介绍本文所采用的隐式 Q 学习算法。
 
-在线强化学习（Online RL）要求智能体与环境持续交互以收集训练数据，然而在众多现实场景中——例如医疗决策、自动驾驶或机器人操作——此类交互的代价极为高昂甚至存在安全风险。离线强化学习范式的提出，旨在仅利用历史数据驱动策略学习，彻底规避在线交互的代价。然而，这一范式转换带来了标准强化学习框架所不具备的核心理论难题：分布偏移与外推误差。本节将系统阐述上述问题的数学本质，并深入剖析以隐式 Q 学习为代表的保守价值评估方法如何在理论层面予以解决。
+\xsubsection{分布偏移问题}{Distribution Shift}
 
-\xsubsection{离线强化学习范式与分布偏移问题}{Offline Reinforcement Learning Paradigm and Distribution Shift}
+离线强化学习的核心约束在于策略优化所依赖的全部信息来源于预先收集的静态数据集 $\mathcal{D} = \{ ( s_t^{(i)}, a_t^{(i)}, r_t^{(i)}, s_{t+1}^{(i)} ) \}_{i=1}^{N}$，该数据集由行为策略 $\pi_\beta$ 与环境交互产生。分布偏移（Distribution Shift）是此范式区别于在线学习的根本性挑战：学习得到的策略 $\pi$ 在部署阶段所访问的状态-动作分布 $\rho^\pi(s, a)$ 与数据集分布 $\rho^{\mathcal{D}}(s, a) = d^{\pi_\beta}(s)\pi_\beta(a \mid s)$ 之间存在结构性差异，当 $\pi$ 偏离 $\pi_\beta$ 时将在数据集未充分覆盖的区域赋予显著概率质量，而在这些分布外（Out-of-Distribution, OOD）区域，Q 函数的泛化行为无法由数据监督。
 
-\textbf{离线强化学习的基本范式}
-
-离线强化学习（Offline Reinforcement Learning）的核心约束在于：学习过程中智能体无法与环境产生任何新的交互，策略优化所依赖的全部信息来源于一个预先收集的静态数据集：
-\begin{equation}
-    \mathcal{D} = \left\{ \left( s_t^{(i)},\, a_t^{(i)},\, r_t^{(i)},\, s_{t+1}^{(i)} \right) \right\}_{i=1}^{N}
-\end{equation}
-该数据集由一个或多个行为策略（Behavior Policy）$\pi_\beta$ 与环境交互产生，$\pi_\beta$ 可以是人类专家、启发式控制器、次优在线智能体或上述多者的混合。数据集中的状态-动作对服从行为策略诱导的分布 $\rho^{\mathcal{D}}(s, a) = d^{\pi_\beta}(s)\,\pi_\beta(a \mid s)$，其中 $d^{\pi_\beta}(s)$ 为 $\pi_\beta$ 的折扣状态访问分布。
-
-在此约束下，离线强化学习的目标等价于：在 $\mathcal{D}$ 的支撑范围内寻找能够最大化真实环境回报的策略 $\pi$，而不依赖于额外的环境反馈。
-
-\textbf{分布偏移的数学表征}
-
-分布偏移（Distribution Shift）是离线强化学习区别于在线学习的根本性挑战。其核心矛盾在于：学习得到的策略 $\pi$ 在部署阶段所访问的状态-动作分布 $\rho^\pi(s, a) = d^\pi(s)\,\pi(a \mid s)$，与数据集所反映的分布 $\rho^{\mathcal{D}}(s, a)$ 之间存在结构性差异。
-
-具体地，将两者之间的分布偏移量化为全变差（Total Variation）距离或 KL 散度：
-\begin{equation}
-    D_{\mathrm{TV}}\!\left( \rho^\pi \,\|\, \rho^{\mathcal{D}} \right) = \frac{1}{2} \int_{\mathcal{S} \times \mathcal{A}} \left| \rho^\pi(s, a) - \rho^{\mathcal{D}}(s, a) \right| \mathrm{d}s\,\mathrm{d}a
-\end{equation}
-
-当 $\pi$ 偏离 $\pi_\beta$ 时，$\rho^\pi$ 将在 $\mathcal{D}$ 未充分覆盖的区域赋予显著概率质量。正是在这些分布外（Out-of-Distribution, OOD）区域，Q 函数的泛化行为无法由数据监督，从而引发估计失真。
-
-\textbf{外推误差的逻辑链及其灾难性后果}
-
-将分布偏移导致值函数失效的过程形式化为以下推导链。
-
-标准离线 Q 学习的贝尔曼更新为：
+这一分布偏移将通过外推误差（Extrapolation Error）引发严重的性能退化。标准离线 Q 学习的贝尔曼更新可以表示为：
 \begin{equation}
     Q_{\theta}(s, a) \leftarrow r(s, a) + \gamma \max_{a' \in \mathcal{A}} Q_{\bar{\theta}}(s', a')
 \end{equation}
-其中 $Q_{\bar{\theta}}$ 为目标网络。注意，上式中的 $\max_{a'}$ 算子在整个动作空间 $\mathcal{A}$ 上取最大，而非仅在数据集支撑 $\mathrm{supp}(\pi_\beta(\cdot \mid s'))$ 上取最大。
+其中 $\max_{a'}$ 在整个动作空间上取最大，而非仅在数据集支撑范围内。当所选贪婪动作为分布外动作时，神经网络的 Q 值估计完全依赖外推，缺乏真实环境反馈约束，通常呈现严重高估偏差。更进一步，这一误差通过贝尔曼自举的递归传播机制逐步扩散至分布内的状态-动作对，造成系统性的 Q 值高估，策略在高估的 Q 值引导下倾向于选择 OOD 动作，导致部署后性能显著下降。
 
-设 $a^*_{s'} = \arg\max_{a'} Q_{\bar{\theta}}(s', a')$ 为所选择的贪婪动作，当 $a^*_{s'} \notin \mathrm{supp}(\pi_\beta(\cdot \mid s'))$ 时，即 $a^*_{s'}$ 为分布外动作，神经网络函数逼近器对其 Q 值的估计完全依赖于在分布内数据上学到的归纳偏置（Inductive Bias）的外推，缺乏任何真实环境反馈的约束。
+\xsubsection{隐式 Q 学习}{Implicit Q-Learning}
 
-定义外推误差为：
+隐式 Q 学习（Implicit Q-Learning, IQL）\cite{kostrikov2021offline}采用了不同于策略约束的技术路径：通过期望回归（Expectile Regression）机制完全规避对分布外动作的显式 Q 值查询。其关键洞察在于，贝尔曼最优算子中的 $\max_{a'} Q(s', a')$ 可通过直接估计数据集支撑范围内的最优状态价值函数 $V(s')$ 来安全替换，从而在 TD 目标计算中完全消除对具体动作的依赖。对于期望水平 $\tau \in (0, 1)$，定义非对称平方损失：
 \begin{equation}
-    \varepsilon_{\mathrm{extrap}}(s, a) \triangleq \left| Q_\theta(s, a) - Q^{\pi_\beta}(s, a) \right|, \quad (s, a) \notin \mathrm{supp}(\mathcal{D})
+    \mathcal{L}_2^\tau(u) = \left| \tau - \mathbb{I}(u < 0) \right| u^2 = \begin{cases} \tau \, u^2, & u \geq 0 \\ (1 - \tau)\, u^2, & u < 0 \end{cases}
 \end{equation}
+该损失对正、负残差施加不同权重——当 $\tau > 0.5$ 时正残差惩罚更大，迫使估计值向分布高端偏移，选取较大 $\tau$（如 $0.7 \sim 0.9$）即可稳健逼近数据集中 Q 值分布的上端。
 
-由于神经网络倾向于对分布外输入输出异常大的激活值，$Q_\theta$ 在 OOD 区域通常呈现严重的高估（Overestimation Bias）。更为致命的是，这一误差通过贝尔曼自举（Bellman Bootstrapping）的递归传播机制扩散至分布内的状态-动作对。设第 $k$ 次迭代后的误差上界为 $\varepsilon_k$，则有如下误差传播不等式：
-\begin{equation}
-    \varepsilon_{k+1} \leq \gamma \varepsilon_k + \gamma \cdot \varepsilon_{\mathrm{extrap}}
-\end{equation}
-
-该递推关系表明，外推误差以几何级数向历史状态-动作对反向传播，在迭代过程中造成系统性的 Q 值虚高。策略 $\pi$ 在此虚高 Q 值指引下倾向于选择 OOD 动作（因其 Q 值估计最大），而这些动作在真实环境中的回报往往远低于预期，最终导致训练完成后策略性能严重下降甚至彻底失效。
-
-上述分析揭示，离线 Q 学习的失效根源并非算法设计的缺陷，而是函数逼近与分布偏移在贝尔曼自举框架下的结构性冲突。有效的解决方案须从根本上消除或约束对 OOD 动作 Q 值的依赖，这正是以 IQL 为代表的保守价值评估方法的理论出发点。
-
-\xsubsection{隐式 Q 学习算法}{Implicit Q-Learning}
-
-\textbf{理论初衷：消除分布外动作查询}
-
-隐式 Q 学习（Implicit Q-Learning, IQL）\cite{kostrikov2021offline}的核心理论贡献在于，提出了一种完全规避对分布外动作进行显式 Q 值查询的价值评估范式。其关键洞察在于：贝尔曼最优算子中的 $\max_{a'} Q(s', a')$ 操作并非不可替代——若能直接估计数据集支撑范围内的最优状态价值函数 $V(s')$，则该项可以被安全地替换为 $V(s')$，从而在 TD 目标的计算中完全消除对具体动作的依赖。
-
-然而，直接从数据集中估计 $V^*(s) = \max_{a \in \mathrm{supp}(\pi_\beta(\cdot|s))} Q^*(s, a)$ 面临如下困难：数据集中对于给定状态 $s$，动作的采样密度有限，简单取最大值将导致严重的有限样本偏差（Finite-Sample Bias）。IQL 通过期望回归（Expectile Regression）提供了这一问题的严格统计解。
-
-\textbf{期望回归的数学推导}
-
-设随机变量 $X$ 服从分布 $\mathcal{P}_X$，对于给定的期望水平 $\tau \in (0, 1)$，$X$ 的 $\tau$-期望值（$\tau$-Expectile）定义为以下优化问题的解：
-\begin{equation}
-    m_\tau = \mathop{\arg\min}_{m \in \mathbb{R}}\; \mathbb{E}_{X \sim \mathcal{P}_X}\!\left[ \mathcal{L}_2^\tau(X - m) \right]
-\end{equation}
-其中，非对称平方损失函数（Asymmetric Squared Loss）$\mathcal{L}_2^\tau: \mathbb{R} \to \mathbb{R}_{\geq 0}$ 定义为：
-\begin{equation}
-    \mathcal{L}_2^\tau(u) = \left| \tau - \mathbb{I}(u < 0) \right| u^2
-\end{equation}
-式中，$\mathbb{I}(\cdot)$ 为指示函数（Indicator Function）。展开可得：
-\begin{equation}
-    \mathcal{L}_2^\tau(u) = \begin{cases} \tau \, u^2, & u \geq 0 \\ (1 - \tau)\, u^2, & u < 0 \end{cases}
-\end{equation}
-
-对期望取一阶最优性条件，令 $\frac{\partial}{\partial m}\mathbb{E}[\mathcal{L}_2^\tau(X - m)] = 0$，得：
-\begin{equation}
-    2\tau \,\mathbb{E}\!\left[ (X - m)\,\mathbb{I}(X \geq m) \right] - 2(1-\tau)\,\mathbb{E}\!\left[ (X - m)\,\mathbb{I}(X < m) \right] = 0
-\end{equation}
-
-分析上式关于 $\tau$ 的极端情形：
-\begin{itemize}
-    \item 当 $\tau = 0.5$ 时，损失函数退化为标准均方误差，$m_{0.5}$ 为分布 $\mathcal{P}_X$ 的均值 $\mathbb{E}[X]$。
-    \item 当 $\tau \to 1$ 时，正残差 $(X - m)$ 所受惩罚趋向无穷大，迫使 $m$ 趋近于 $X$ 的支撑上确界，即 $m_\tau \to \mathrm{ess\,sup}\,X$。
-    \item 当 $\tau \in (0.5, 1)$ 时，$m_\tau$ 为均值与上确界之间关于 $\tau$ 单调递增的插值，即分布的高分位数估计。
-\end{itemize}
-
-这一性质表明，通过选取较大的 $\tau$ 值（如 $\tau = 0.7 \sim 0.9$），期望回归可以在统计意义上稳健地逼近分布的上端，从而隐式实现对策略价值上界的估计。
-
-\textbf{IQL 的三阶段训练机制}
-
-IQL 将价值估计解耦为三个独立的监督学习目标，各阶段均严格约束在数据集分布内。
-
-\underline{第一阶段——状态价值函数的期望回归训练}：利用期望回归训练参数为 $\psi$ 的状态价值网络 $V_\psi(s)$，其损失函数为：
+IQL 据此将价值估计解耦为三个阶段，各阶段均严格约束在数据集分布内。第一阶段利用期望回归训练状态价值网络 $V_\psi(s)$：
 \begin{equation}
     L_V(\psi) = \mathbb{E}_{(s, a) \sim \mathcal{D}}\!\left[ \mathcal{L}_2^\tau\!\left( Q_{\bar{\theta}}(s, a) - V_\psi(s) \right) \right]
 \end{equation}
-其中，$Q_{\bar{\theta}}$ 为目标 Q 网络（参数 $\bar{\theta}$ 为 $\theta$ 的指数移动平均）。$V_\psi(s)$ 的物理意义得以精确刻画：它并非在整个动作空间上的期望或最大值，而是在给定状态 $s$ 下，数据集所记录的 Q 值分布 $\{Q_{\bar{\theta}}(s, a) : (s, a) \in \mathcal{D}\}$ 的 $\tau$-期望值——即数据集支撑范围内的高分位价值估计。由于 $V_\psi(s)$ 的优化目标仅涉及数据集中已有的 $(s, a)$ 对，整个过程完全不查询任何分布外动作的 Q 值。
-
-\underline{第二阶段——Q 函数的保守贝尔曼更新}：利用第一阶段学得的 $V_\psi$ 替代标准贝尔曼算子中的 $\max_{a'} Q(s', a')$，对参数为 $\theta$ 的 Q 网络执行保守的 TD 更新：
+第二阶段利用 $V_\psi$ 替代 $\max_{a'} Q(s', a')$，对 Q 网络执行保守的 TD 更新：
 \begin{equation}
-    L_Q(\theta) = \mathbb{E}_{(s, a, r, s') \sim \mathcal{D}}\!\left[ \left( Q_\theta(s, a) - \underbrace{\left( r + \gamma V_\psi(s') \right)}_{\text{无动作查询的 TD 目标}} \right)^2 \right]
+    L_Q(\theta) = \mathbb{E}_{(s, a, r, s') \sim \mathcal{D}}\!\left[ \left( Q_\theta(s, a) - \left( r + \gamma V_\psi(s') \right) \right)^2 \right]
 \end{equation}
-TD 目标 $r + \gamma V_\psi(s')$ 在计算中无需指定动作 $a'$，完全规避了对 $s'$ 处任何具体动作 Q 值的查询，从根本上切断了外推误差的传播路径。
-
-\underline{第三阶段——优势加权回归策略提取}：利用前两阶段的估计结果，通过优势加权回归（Advantage Weighted Regression, AWR）\cite{peng2019advantage}从数据集中提取策略 $\pi_\phi$：
+TD 目标 $r + \gamma V_\psi(s')$ 无需指定动作，避免了外推误差的传播。第三阶段通过优势加权回归（Advantage Weighted Regression, AWR）\cite{peng2019advantage}提取策略：
 \begin{equation}
-    L_\pi(\phi) = -\mathbb{E}_{(s, a) \sim \mathcal{D}}\!\left[ \exp\!\left( \beta \cdot A(s, a) \right) \cdot \log \pi_\phi(a \mid s) \right]
+    L_\pi(\phi) = -\mathbb{E}_{(s, a) \sim \mathcal{D}}\!\left[ \exp\!\left( \beta \cdot \left( Q_{\bar{\theta}}(s, a) - V_\psi(s) \right) \right) \cdot \log \pi_\phi(a \mid s) \right]
 \end{equation}
-其中，优势函数 $A(s, a) = Q_{\bar{\theta}}(s, a) - V_\psi(s)$ 衡量数据集中动作 $a$ 相对于当前 $V_\psi$ 估计值的超额回报，$\beta > 0$ 为逆温度参数。
+其中权重 $\exp(\beta(Q - V))$ 对优势为正的动作赋予指数级放大的模仿权重，对优势为负的动作赋予接近零的权重，通过逆温度参数 $\beta$ 在保守模仿与激进提取之间灵活权衡。与直接行为克隆不同，AWR 根据优势函数的大小选择性地调整模仿强度，使得算法即使在数据集包含次优轨迹的情况下仍能提取出较优的策略。
 
-AWR 目标的等价形式为加权最大似然估计：
-\begin{equation}
-    L_\pi(\phi) = -\mathbb{E}_{(s, a) \sim \mathcal{D}}\!\left[ w(s, a) \cdot \log \pi_\phi(a \mid s) \right], \quad w(s, a) = \exp\!\left( \beta \bigl( Q_{\bar{\theta}}(s, a) - V_\psi(s) \bigr) \right)
-\end{equation}
+IQL 的优势在于将最优价值评估转化为约束于数据集分布的统计估计任务，消除了对分布外动作查询的依赖，且参数 $\tau$ 提供了保守性-最优性的连续权衡谱系。然而在掩码部分可观测场景下，各阶段的输入从完整状态退化为残缺观测 $o = s \odot m$，若编码器无法从可观测维度恢复被遮蔽维度的关键信息，期望回归的估计将产生系统性偏差，进而损害策略提取质量。这一局限性表明，在部分可观测条件下提升表征质量是保障离线强化学习性能的关键前提。
 
-权重 $w(s, a)$ 对优势为正的动作（即优于当前值函数估计的动作）赋予指数级放大的模仿权重，对优势为负的动作赋予接近零的权重，从而在纯行为克隆（Behavioral Cloning）与纯策略优化之间取得原则性权衡。通过参数 $\beta$ 的调节，IQL 可以在"保守地模仿数据集"与"激进地提取数据集最优行为"之间灵活权衡，而整个提取过程始终限制在数据集的动作分布支撑范围内，有效规避了分布外泛化的风险。
+\xsection{表示学习方法}{Representation Learning Methods}
 
-\textbf{IQL 的理论一致性}
+\xsubsection{概述}{Overview}
 
-IQL 的三阶段设计具有严格的理论一致性保证。当数据集覆盖充分（$\mathcal{D}$ 包含最优策略的支撑）且 $\tau \to 1$ 时，$V_\psi(s)$ 在统计意义上趋近于 $\max_{a \in \mathrm{supp}(\pi_\beta(\cdot|s))} Q^*(s, a)$，Q 网络的 TD 更新趋近于贝尔曼最优算子，AWR 策略提取趋近于最优策略。在 $\tau < 1$ 的一般情形下，IQL 提供了一个关于 $\tau$ 连续参数化的保守性-最优性权衡谱系，为实践中针对数据集质量的自适应调节提供了理论依据。
+前两节从决策框架与价值评估角度建立了理论基础，但上述框架均隐含一个前提：智能体能够从原始观测中获取足以支撑精确价值估计的状态信息。表示学习（Representation Learning）旨在从原始数据中自动提取适合下游任务的紧凑特征表示）\cite{bengio2013representation}，与人工设计特征的传统方法相比，表示学习能够自动发现数据中的潜在结构，已在计算机视觉\cite{he2016deep}和自然语言处\cite{vaswani2017attention}理等领域得到广泛验证。在强化学习中，表征质量直接影响值函数估计和策略优化的精度，当观测为高维图像或存在结构性缺失时尤为突出。
 
-综上所述，IQL 通过将最优价值评估问题转化为期望回归——一种严格约束于数据集分布的统计估计任务——从根本上消除了离线 Q 学习对分布外动作查询的依赖，并借助优势加权回归实现了稳健而高效的策略提取。这一价值评估范式的转变表明：在复杂观测场景下，高质量的状态表征对于准确估计 $Q_{\bar{\theta}}(s, a)$ 与 $V_\psi(s)$ 同等关键——若状态编码器无法从高维噪声观测中提取充分的语义特征，则期望回归所估计的 $\tau$-期望值将因输入信息不充分而产生系统性偏差，进而损害策略提取的质量。这一理论分析为后文在复杂残缺观测环境下进一步优化特征表征的研究路径提供了明确的方法论基础。
+针对强化学习中的表征构建问题，现有方法可从三个维度展开：数据增强表征通过构建对任务无关变换的不变性来提升编码器的泛化能力；向量量化表征通过离散码本约束潜在表示的取值范围，抑制分布外输入的异常激活；掩码自监督学习通过掩码重建任务迫使编码器学习数据的全局结构依赖。本节将依次剖析这三种机制的原理与局限性。
 
-\xsection{复杂观测下的表示学习机制}{Representation Learning Mechanisms under Complex Observations}
+\xsubsection{数据增强表征}{Data Augmentation Representation}
 
-前两节分别从决策框架与价值评估角度建立了强化学习的理论基础。然而，上述框架均隐含一个前提：智能体能够从原始观测中获取足以支撑精确价值估计的状态信息。当观测为高维图像或存在结构性缺失时，这一前提不再自然成立，表征学习的质量成为制约整体性能的关键瓶颈。本节从两个互补维度剖析复杂观测场景下的表征构建机制：其一，基于数据增强的视觉不变性表征；其二，基于掩码建模的低维物理状态重构。两者共同构成本文核心算法设计的表征理论基础。
+数据增强（Data Augmentation）最初是计算机视觉中用于扩充训练集、提升模型泛化能力的经典技术。Laskin 等人\cite{laskin2020reinforcement}和 Kostrikov 等人\cite{kostrikov2020image}的研究表明，将数据增强引入视觉强化学习可以有效提升基于像素观测的控制策略的样本效率。视觉强化学习面临的首要挑战是维度灾难：原始 RGB 观测 $o_t \in \mathbb{R}^{H \times W \times C}$ 的像素维度达 $10^4 \sim 10^5$ 量级，而决定系统动力学的物理自由度往往仅数十维。卷积神经网络将高维观测压缩为低维潜特征 $z_t = E_\phi(o_t) \in \mathbb{R}^d$（$d \ll H \cdot W \cdot C$），在此基础上，RAD\cite{laskin2020reinforcement}、DrQ\cite{kostrikov2020image} 等方法通过最小化同一观测两个增强视图编码之间的均方距离，迫使编码器剥离增强操作引入的无关扰动，保留对决策有用的结构信息。
 
-\xsubsection{视觉强化学习与数据增强表示}{Visual Reinforcement Learning and Data Augmentation Representation}
+数据增强表征的优势在于实现简单且与现有强化学习算法兼容性强，弱增强操作（如小幅度随机平移和颜色抖动）不改变场景语义，能稳定地提升编码器泛化能力。然而，强数据增强在强化学习中会破坏 MDP 的时间平滑性：相邻时间步因独立采样增强操作而编码方差增大，经 Q 函数梯度放大后直接转化为 TD 目标值的高方差，致使训练曲线高度不稳定。该问题的根源在于数据增强操作与强化学习任务的动力学特性之间缺乏语义对齐。因此，如何根据任务的动力学属性选择合适的增强策略，在不变性收益与时间平滑性代价之间取得平衡，成为亟待解决的问题。本文后续提出的 PICK 算法即针对这一问题展开。
 
-\textbf{卷积神经网络的降维表征作用}
 
-基于图像的视觉强化学习（Visual Reinforcement Learning）面临的首要挑战是维度灾难（Curse of Dimensionality）：原始 RGB 观测 $o_t \in \mathbb{R}^{H \times W \times C}$ 的像素空间维度通常达到 $10^4 \sim 10^5$ 量级，而真正决定系统动力学的物理自由度（关节角、速度、接触力等）往往仅有数十维。卷积神经网络（Convolutional Neural Network, CNN）凭借局部感受野与参数共享的归纳偏置，对视觉观测实施层次化的非线性特征提取：
-\begin{equation}
-    z_t = E_\phi(o_t), \quad E_\phi: \mathbb{R}^{H \times W \times C} \to \mathbb{R}^d,\quad d \ll H \cdot W \cdot C
-\end{equation}
-其中，$E_\phi$ 为参数化的 CNN 编码器，$z_t \in \mathbb{R}^d$ 为低维潜特征（Latent Feature）。CNN 通过卷积层逐步聚合局部纹理、边缘与形状信息，经全连接层投影至紧凑的潜在空间，从而将高维像素观测压缩为适合值函数与策略网络处理的低维表征。然而，潜特征 $z_t$ 的语义质量直接决定了下游强化学习算法的性能上限，这催生了对编码器训练目标的精细设计。
+\xsubsection{掩码自监督学习}{Masked Self-Supervised Learning}
 
-\textbf{不变性表征的数学定义}
-
-数据增强（Data Augmentation）是提升视觉编码器鲁棒性的主流手段。其理论动机来源于不变性表征（Invariant Representation）的概念：对于任务无关的观测变换（如随机裁剪、颜色抖动、平移或频率掩盖），编码器所提取的潜特征应在语义层面保持稳定，不受变换引起的像素级扰动影响。
-
-设 $\mathcal{T}$ 为一族数据增强变换的分布，$\tilde{o} = \mathcal{T}(o)$ 为经增强操作后的观测。不变性表征的目标可形式化表述为：
-\begin{equation}
-    \forall \mathcal{T} \in \mathbb{T}:\quad \mathcal{F}\!\left( E_\phi(o) \right) \approx \mathcal{F}\!\left( E_\phi\!\left( \mathcal{T}(o) \right) \right)
-\end{equation}
-其中，$\mathcal{F}$ 为任意下游任务相关的泛函（如价值函数或策略映射）。在实践中，不变性目标通常通过对比学习（Contrastive Learning）或一致性正则化（Consistency Regularization）来实现，例如 RAD\cite{laskin2020reinforcement}、DrQ\cite{kostrikov2020image} 等方法要求同一观测的两个增强视图在潜空间中距离足够近：
-\begin{equation}
-    \mathcal{L}_{\mathrm{inv}} = \mathbb{E}_{o \sim \mathcal{D},\, \mathcal{T}_1, \mathcal{T}_2 \sim \mathbb{T}}\!\left[ \left\| E_\phi\!\left( \mathcal{T}_1(o) \right) - \mathrm{sg}\!\left[ E_\phi\!\left( \mathcal{T}_2(o) \right) \right] \right\|_2^2 \right]
-\end{equation}
-其中，$\mathrm{sg}[\cdot]$ 表示停止梯度算子（Stop-Gradient），用于防止表征坍缩（Representation Collapse）。不变性约束迫使编码器剥离增强操作引入的无关扰动，保留对决策任务真正有用的结构信息。
-
-\textbf{关键痛点：强数据增强对时间平滑性的破坏}
-
-尽管数据增强能够改善编码器对视觉扰动的鲁棒性，强数据增强（Strong Augmentation）——即变换幅度显著改变图像的低频结构，如大范围随机裁剪、频率域掩盖或强烈颜色变换——在强化学习中会引发一个深层的理论问题：马尔可夫决策过程的时间平滑性（Temporal Smoothness）遭受破坏。
-
-时间平滑性要求相邻时间步的状态转移在潜空间中保持局部连续性，即对于真实状态序列 $(s_t, s_{t+1})$，其编码表征满足：
-\begin{equation}
-    \left\| E_\phi(o_{t+1}) - E_\phi(o_t) \right\|_2 \leq \kappa \left\| o_{t+1} - o_t \right\|_2
-\end{equation}
-其中，$\kappa > 0$ 为利普希茨常数（Lipschitz Constant），刻画了编码器的局部平滑程度。
-
-当施加强数据增强 $\mathcal{T}$ 时，同一时间步的观测 $o_t$ 被映射至两个语义相异的增强视图 $\tilde{o}_t^{(1)}$ 与 $\tilde{o}_t^{(2)}$，而相邻时间步 $\tilde{o}_t$ 与 $\tilde{o}_{t+1}$ 因独立采样增强操作而彼此无关。在此情形下，时序差分（Temporal Difference）自举所依赖的目标值为：
-\begin{equation}
-    y_t = r_t + \gamma \min_{j} Q_{\bar{\theta}_j}\!\left( E_\phi\!\left( \mathcal{T}^{(j)}(o_{t+1}) \right),\, \tilde{a}_{t+1} \right)
-\end{equation}
-其中 $\mathcal{T}^{(j)}$ 为对 $o_{t+1}$ 的第 $j$ 次随机采样。目标值 $y_t$ 的方差可分解为：
-\begin{equation}
-    \mathrm{Var}(y_t) = \gamma^2\, \mathrm{Var}\!\left( Q_{\bar{\theta}}\!\left( E_\phi(\mathcal{T}(o_{t+1})), \tilde{a}_{t+1} \right) \right) \geq \gamma^2\, \mathbb{E}\!\left[ \left( \frac{\partial Q}{\partial z} \right)^2 \right] \cdot \mathrm{Var}\!\left( E_\phi\!\left(\mathcal{T}(o_{t+1})\right) \right)
-\end{equation}
-
-上式表明，强增强所引入的编码方差 $\mathrm{Var}(E_\phi(\mathcal{T}(o_{t+1})))$ 经 Q 函数梯度的放大后，直接转化为目标值 $y_t$ 的高方差。目标值的随机波动等价于在贝尔曼更新中注入系统性噪声，致使 Critic 的梯度方向在相邻迭代间剧烈震荡，训练曲线呈现高度不稳定性，甚至导致 Q 值发散。
-
-此问题的根源在于：数据增强操作集合 $\mathbb{T}$ 的设计与具体强化学习任务的奖励结构、状态转移动力学之间存在天然的语义错位——增强对于分类任务可能是无害的标签保持变换，但对于依赖精确时序信息进行 TD 自举的强化学习任务，相同的增强却可能破坏决策所必需的物理一致性。这一矛盾揭示了一个核心需求：针对强化学习任务，数据增强的选择不应遵循与视觉识别任务相同的启发式规则，而需要一种能够感知当前任务动力学属性的增强选择机制，以在不变性收益与时间平滑性代价之间取得原则性权衡。这一需求正是本文后续提出 PICK 算法的直接理论动因。
-
-\xsubsection{掩码建模与自监督特征重建}{Masked Modeling and Self-Supervised Feature Reconstruction}
-
-\textbf{数据流形假设}
-
-高维视觉观测的可学习性根植于数据流形假设（Data Manifold Hypothesis）：自然场景中由物理系统产生的图像序列，尽管在像素空间中具有极高维度，却实际分布在一个远低维的黎曼流形（Riemannian Manifold）$\mathcal{M} \subset \mathbb{R}^{H \times W \times C}$ 附近，且该流形的内在维度（Intrinsic Dimensionality）由物理系统的真实自由度数目所决定：
-\begin{equation}
-    \dim(\mathcal{M}) \approx \dim(\mathcal{S}) \ll H \cdot W \cdot C
-\end{equation}
-
-这一假设的物理内涵在于：机器人系统的关节角度、速度、接触力等状态变量之间受到运动学约束、动力学方程与接触力学定律的严格约束，使得合法的状态轨迹被限制在物理上可行的低维子流形上。流形上的相邻点对应物理上连续的状态演化，流形的切空间局部描述了合法的状态变化方向。在此假设下，表征学习的目标等价于：寻找从像素空间到流形内在坐标的高保真映射，从而在低维潜空间中保留物理系统的几何结构与动力学约束。
-
-\textbf{掩码自编码器的架构与重建目标}
-
-掩码自编码器（Masked Autoencoder, MAE）\cite{he2022masked}是实现上述流形学习目标的有效自监督框架。其核心思想源于完形填空（Cloze Test）的认知原理：若模型能够从部分遮盖的输入中精确重建被掩盖的区域，则必然已学得数据的全局结构与局部语义之间的内在关联，这恰好对应于对流形几何的隐式编码。
-
-MAE 由编码器 $E_\phi: \mathbb{R}^{H \times W \times C} \to \mathbb{R}^d$ 与解码器 $D_\psi: \mathbb{R}^d \to \mathbb{R}^{H \times W \times C}$ 构成。给定原始观测 $s \in \mathbb{R}^{H \times W \times C}$，首先施加随机掩码操作 $M \in \{0, 1\}^{H \times W}$（$M_{ij} = 0$ 表示该位置被遮盖），得到部分可见输入：
-\begin{equation}
-    \tilde{s} = s \odot M
-\end{equation}
-其中，$\odot$ 表示逐元素乘积（Hadamard Product），实践中 $M$ 通常对图像块（Patch）级别进行采样，掩码比例 $\rho \in [0.5, 0.75]$ 以确保任务难度足够。
-
-编码器对可见区域进行特征提取，解码器以潜特征与可学习掩码标记（Mask Token）为输入，尝试重建完整观测。训练目标为最小化重建均方误差：
-\begin{equation}
-    \min_{\phi,\, \psi}\;\mathbb{E}_{s \sim \mathcal{D},\, M \sim \mathcal{M}}\!\left[ \left\| D_\psi\!\left( E_\phi(s \odot M) \right) - s \right\|_2^2 \right]
-\end{equation}
-
-在实践中，损失计算通常仅限于被掩盖区域以提高学习效率：
+掩码自编码器（Masked Autoencoder, MAE）\cite{he2022masked}将掩码预测机制引入视觉领域，其理论基础根植于数据流形假设：物理系统产生的观测尽管维度极高，却分布在一个远低维的流形附近。MAE 的基本原理在于，若模型能够从部分遮盖的输入中准确重建被掩盖区域，则表明其已捕获数据全局结构与局部语义之间的依赖关系。MAE 由编码器 $E_\phi$ 与解码器 $D_\psi$ 构成，训练目标为最小化被掩盖区域的重建误差：
 \begin{equation}
     \mathcal{L}_{\mathrm{recon}}(\phi, \psi) = \mathbb{E}_{s \sim \mathcal{D},\, M \sim \mathcal{M}}\!\left[ \frac{1}{|\bar{M}|}\sum_{(i,j):\, M_{ij}=0} \left\| \left[ D_\psi\!\left( E_\phi(s \odot M) \right) \right]_{ij} - s_{ij} \right\|_2^2 \right]
 \end{equation}
-其中，$|\bar{M}| = \sum_{ij}(1 - M_{ij})$ 为被掩盖区域的总面积。
+重建过程要求模型理解数据间的依赖关系，编码器因此必须将可见区域压缩为包含全局状态信息的紧凑表征。这一自监督范式无需人工标注或奖励信号即可进行表征学习。
 
-\textbf{自监督重建的理论可行性}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{c2/mae.png}
+    \caption{MAE 架构示意图。输入图像被划分为规则块后随机遮盖大比例区域，编码器仅处理可见块提取潜在表征，解码器在潜在表征基础上补充掩码标记后重建被遮盖区域，通过最小化重建误差学习数据的全局结构信息。}
+    \label{fig:mae}
+\end{figure}
 
-MAE 重建目标的理论可行性建立在以下因果链上：其一，被掩盖区域的精确重建要求模型对未掩盖区域的特征进行"语境推理"（Contextual Reasoning），即理解相邻图像块之间的视觉依赖关系；其二，视觉图像块之间的依赖关系在物理系统中由系统的几何结构、光照模型与运动学约束决定，因此语境推理过程隐式地要求模型学习这些物理约束；其三，编码器 $E_\phi$ 为了支持解码器 $D_\psi$ 完成高质量重建，必须将可见区域的信息压缩为包含全局物理状态信息的紧凑表征 $z = E_\phi(\tilde{s})$，而非仅编码局部纹理特征。
+这一框架可从图像块级掩码自然推广到状态维度级掩码。当观测为低维结构化状态向量时，重建目标变为 $\mathcal{L}_{\mathrm{state\text{-}recon}} = \mathbb{E}_{s,m}[\| D_\psi(E_\phi(s \odot m)) - s \|_2^2]$。掩码重建迫使编码器从可观测维度推断被遮蔽维度的值，隐式学习状态各维度间的物理耦合关系，且与 VQ-VAE 相比保留了连续依赖结构而不受码本容量限制。掩码自监督学习的优势在于无需标注数据即可构建具有全局感知能力的表征，且 MAE 的非对称架构设计使编码器在推理阶段可独立高效运行，满足强化学习中的实时性要求。
 
-这一自监督过程等价于将潜特征 $z$ 约束在数据流形 $\mathcal{M}$ 的内在坐标上：若 $z$ 偏离流形，则解码器 $D_\psi$ 无法从该坐标重建出物理合法的观测，训练损失将产生显著惩罚，迫使 $z$ 回归流形。形式上，最优编码器 $E_\phi^*$ 满足：
-\begin{equation}
-    E_\phi^*(s) \approx \Phi(s), \quad \forall s \in \mathcal{M}
-\end{equation}
-其中，$\Phi: \mathcal{M} \to \mathbb{R}^d$ 为流形 $\mathcal{M}$ 到潜空间的同胚映射（Homeomorphism），即一一连续的双向映射，保留了流形的拓扑结构与局部度量关系。因此，MAE 以纯数据驱动的方式，隐式学习了物理系统状态空间的几何编码，为下游强化学习中的价值函数估计提供了信息充分的低维特征基础。
+然而，在强化学习框架下将重建损失与 TD 损失联合优化共享编码器会面临严重的梯度冲突。TD 损失的梯度倾向于强化与奖励结构相关的特征，驱使表征向任务特定的低维决策子空间坍缩；重建损失的梯度倾向于均匀保留所有具有重建价值的特征，驱使表征向全局物理状态的高维流形展开。当两种梯度方向相反时，编码器在两个优化目标之间陷入竞争性均衡，表征质量随之下降。已有工作如 ORDER\cite{gu2023order}通过三阶段串行训练在时间维度上隔离两类梯度，但代价是两者之间无法进行动态协同。因此，如何在保持梯度隔离的同时实现联合训练，使重建任务能够在编码器中构建物理状态的流形表征而不受 TD 梯度的干扰，构成了一个值得深入研究的技术问题。本文后续提出的 Masked-IQL 梯度截断机制即围绕这一问题展开设计。
 
-\textbf{关键痛点：联合训练中的梯度冲突}
+\xsection{本章小结}{Chapter Summary}
 
-在强化学习框架下，一种直觉性的方法是将重建损失 $\mathcal{L}_{\mathrm{recon}}$ 作为辅助任务与 TD 损失 $\mathcal{L}_{\mathrm{TD}}$ 联合优化，对共享编码器 $E_\phi$ 进行端到端训练：
-\begin{equation}
-    \mathcal{L}_{\mathrm{joint}}(\phi) = \mathcal{L}_{\mathrm{TD}}(\phi) + \lambda \,\mathcal{L}_{\mathrm{recon}}(\phi, \psi)
-\end{equation}
+本章从理论层面系统梳理了支撑本文方法的三个核心基础，构建了面向掩码部分可观测离线强化学习问题的完整理论背景。
 
-然而，这一联合训练范式在实践中面临严重的梯度冲突（Gradient Conflict）问题。设 $g_{\mathrm{TD}} = \nabla_\phi \mathcal{L}_{\mathrm{TD}}$ 与 $g_{\mathrm{recon}} = \nabla_\phi \mathcal{L}_{\mathrm{recon}}$ 分别为两个任务施加在编码器参数上的梯度，梯度冲突的严重程度由其余弦相似度刻画：
-\begin{equation}
-    \cos\angle(g_{\mathrm{TD}},\, g_{\mathrm{recon}}) = \frac{\langle g_{\mathrm{TD}},\, g_{\mathrm{recon}} \rangle}{\left\| g_{\mathrm{TD}} \right\|_2 \cdot \left\| g_{\mathrm{recon}} \right\|_2}
-\end{equation}
+在强化学习基础方面，本章以马尔可夫决策过程为出发点，阐述了 Actor-Critic 架构的策略梯度原理与 SAC 的最大熵设计，并将标准 MDP 推广至掩码部分可观测设定，指出状态信息缺失对值函数估计的制约作用。
 
-当 $\cos\angle(g_{\mathrm{TD}}, g_{\mathrm{recon}}) < 0$ 时，两梯度方向相反，合并梯度 $g_{\mathrm{TD}} + \lambda g_{\mathrm{recon}}$ 既无法充分减小 $\mathcal{L}_{\mathrm{TD}}$ 也无法充分减小 $\mathcal{L}_{\mathrm{recon}}$，编码器陷入两个目标之间的博弈均衡，表征质量显著退化。
+在离线强化学习方面，本章分析了分布偏移与外推误差的形成机制，重点介绍了 IQL 通过期望回归彻底规避分布外动作查询的三阶段解耦设计——状态价值估计、Q 函数保守更新与优势加权策略提取——为后文在掩码观测条件下扩展 IQL 奠定了直接的算法基础。
 
-这一冲突的产生有其深刻的几何根源。TD 损失的梯度 $g_{\mathrm{TD}}$ 所传递的信号来自贝尔曼残差，其方向由当前 Q 值的高估或低估方向决定，本质上是一种间接的、通过奖励信号反向推断出的特征选择压力——它倾向于强化与当前奖励结构相关的特征维度，对价值估计无关的特征施加抑制。相比之下，重建损失的梯度 $g_{\mathrm{recon}}$ 来自像素级重建误差，所传递的是对全局物理状态信息的保留压力——它倾向于均匀地保留所有具有重建价值的视觉特征，包括背景纹理、光照变化等对决策无关但对像素重建有贡献的信息。
-
-两者的目标在特征选择上存在本质矛盾：TD 学习驱使表征向任务特定的低维决策子空间坍缩，而重建学习驱使表征向全局物理状态的高维流形展开。若在共享编码器上直接叠加两种梯度，则重建目标提取的流形结构将被 TD 更新的噪声梯度所污染，编码器既无法学得用于精确值函数估计的任务相关特征，也无法维护用于重建的全局状态表征，最终导致两项任务的性能均低于各自独立训练的基线。
-
-这一梯度冲突分析表明，自监督重建与 TD 优化在同一编码器参数空间的共存需要精细的梯度流控制机制。必须设计一种表征学习与决策优化解耦的训练范式——允许重建任务在编码器中自由构建物理状态的流形表征，同时防止 TD 梯度对该流形结构造成破坏性干扰。这一原则性要求正是本文后续提出 Masked-IQL 梯度截断机制的核心理论动因。
+在表示学习方法方面，本章对比了数据增强、向量量化和掩码自监督三种表征构建机制：数据增强在时间平滑性上存在不足，向量量化受限于码本容量与梯度近似误差，掩码自监督具备全局感知能力但与 TD 梯度存在冲突。三者的局限性共同指向同一技术需求：将表征学习与策略优化解耦。这一需求直接构成了第四章 Masked-IQL 两阶段解耦框架的核心设计依据。

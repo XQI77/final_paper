@@ -1,86 +1,490 @@
 % !TeX root = ../main.tex
 
-\xchapter{算法与代码}{Algorithm and Code}
+\xchapter{基于任务感知的视觉强化学习数据增强选择方法}{Task-Perceptive Data Augmentation Selection for Visual Reinforcement Learning}
 
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  学校并未对 算法 或 代码 的排版格式作出限定，因此可以自行修改。
-\end{tcolorbox}
+\xsection{引言}{Introduction}
 
-\xsection{算法}{Algorithm}
+视觉强化学习（Visual Reinforcement Learning）以原始像素图像作为智能体的观测输入，通过端到端的深度神经网络直接建立从高维视觉空间到连续控制动作的映射。这一范式的核心优势在于规避了人工特征工程的主观偏差，但同时也带来了泛化困境：由于卷积神经网络具有强烈的局部拟合倾向，在固定训练环境中习得的视觉策略往往过度依赖背景纹理、光照条件等与任务动力学无关的虚假关联，导致策略在测试阶段面对新的视觉环境时性能急剧退化。为缓解上述过拟合问题，学术界广泛借鉴了计算机视觉领域的数据增强（Data Augmentation）技术。以 RAD\cite{laskin2020reinforcement} 和 DrQ\cite{kostrikov2020image} 为代表的工作证明，随机平移等弱增强方法即可显著提升基于 SAC 框架的数据利用效率与训练稳定性。然而，为使策略适应更广泛的测试场景，研究者们开始引入随机旋转、随机卷积、频率掩盖等强数据增强操作，SVEA\cite{hansen2021stabilizing}和 SADA\cite{almuzairee2024recipe}等方法分别从修改 $Q$ 目标形式和引入自监督辅助目标两个角度进行了改进，但均未从根本上解决增强方法与特定任务之间的语义适配问题。
 
-在仔细研究后，本模板使用了基于 \clist[columbiablue]{algorithm2e} 宏包的算法排版工具，而没有使用 \clist[columbiablue]{algorithmicx (algpseudocode)}。同时，需要提醒的是， \clist[columbiablue]{algpseudocode} 在制作竖直定界线方面有一些问题，而能够较好的实现算法自动分段；\clist[columbiablue]{algorithm2e} 则相反，且这两个宏包相互冲突。
+Hansen 等人\cite{hansen2021generalization}的实验分析揭示了视觉强化学习中"泛化与样本效率不可兼得"这一根本性困境，其背后存在三个层面的技术难点。其一，强数据增强与时序差分自举之间存在结构性冲突：强增强操作在相邻时间步对观测施加独立的剧烈变换，破坏了状态编码序列的马尔可夫平滑性，由此产生的表征方差通过贝尔曼自举被持续放大，导致目标 $Q$ 值估计的高频震荡，进而引发策略梯度更新的震荡甚至发散。其二，不同数据增强方法对智能体动作分布的影响存在本质差异：随机平移等弱几何增强下的动作分布与原始分布高度相似，而随机卷积、强旋转等增强引起的动作分布偏移极为剧烈，导致 $Q$ 值估计在增强观测与原始观测之间产生显著不一致。其三，现有方法采用任务无关的增强选择策略，对所有任务、所有训练阶段无差别地随机施加同等强度的增强操作，忽视了增强类型与具体任务奖励结构之间的语义适配性，不可避免地在泛化收益与稳定性代价之间造成系统性失衡。
 
-算法的具体编写方式请自行查阅宏包，即\clist{texdoc algorithm2e}，本模板已预先定义了Do-While循环即\clist{\Do{cond}{code}}。
+基于上述分析，本章提出一种任务感知型数据增强选择方法（Task-Perceptive Data Augmentation Selection，PICK）。该算法的核心在于引入一个独立并行的选择网络 PickNetwork，通过紧凑特征提取模块与概率预测模块的协同运作，依据当前任务状态动态学习不同数据增强方法的选用概率分布，由 Critic 网络的目标函数提供梯度信号实现端到端优化。同时，PICK 采用非对称 Actor-Critic 架构，Actor 网络同时感知原始与增强观测以增强策略鲁棒性，Critic 网络在估计目标 $Q$ 值时仅使用原始未增强观测流以维护训练稳定性。此外，本章引入随机频率掩盖与随机缩放两种新型增强方法，丰富了候选增强空间。
 
-\begin{texcode}[]{}
-  \begin{algorithm}[H]
+本章的主要贡献可概括为以下两点：
+
+1）引入随机频率掩盖（Random Frequency Masking）与随机缩放（Random Scaling）两种新型增强方法，分别通过傅里叶频域的频带屏蔽与随机尺度变换，补充了视觉强化学习中对频率扰动与尺度变换的增强覆盖，为任务感知选择提供了更丰富的候选空间。
+
+2）提出 PickNetwork 端到端学习机制与非对称 Actor-Critic 优化框架。PickNetwork 通过基于 Critic 梯度信号的概率建模实现增强方法的任务感知动态选择，自适应地抑制破坏性增强、优先选用与任务奖励结构相适配的增强策略；非对称观测设定从根本上切断了增强随机性对 Bellman 目标方差的污染路径。
+
+
+\xsection{算法设计}{Algorithm Design}
+
+PICK 算法的整体架构以 Soft Actor-Critic（SAC）\cite{haarnoja2018soft}为基础强化学习框架，在其标准 Actor-Critic 双网络结构之外，并行引入 PickNetwork 作为独立的数据增强选择模块。整体架构的运作逻辑如下：在每个训练时间步，PickNetwork 接收当前观测 $o_t$ 经 CNN 编码器 $f_\xi$ 提取后的潜在特征，输出增强方法集合 $\mathcal{V} = \{v_1, v_2, \ldots, v_n\}$ 上的选择概率分布 $\mathbf{p}_t = (p_{t1}, p_{t2}, \ldots, p_{tn})$；随后，依据该概率分布采样得到的增强操作 $v_t \sim \mathbf{p}_t$ 生成增强观测 $o_t^{\text{aug}} = \text{aug}(o_t, v_t)$；最终，Actor 网络以原始观测与增强观测的拼接编码 $p_t = f_\xi([o_t, o_t^{\text{aug}}]_N)$ 作为输入选取动作，而 Critic 网络在计算目标值时仅使用原始观测的双流编码 $m_t = f_\xi([o_t, o_t]_N)$ 以降低估计方差。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{c3/FIG1.jpg}
+    \caption{PICK 算法网络架构图。PickNetwork 由 Encoder 模块与 Choose 模块串联构成，并行于主 Actor-Critic 网络运行，其参数通过 Critic 目标函数的梯度信号进行端到端更新。}
+    \label{fig:pick_network}
+\end{figure}
+
+PickNetwork 被设计为独立于主 CNN 编码器 $f_\xi$ 的并行模块，而非嵌入主编码器内部，这一模块化设计具有重要的理论意义。若将增强选择机制与值函数估计的表征学习耦合于同一编码器，则两类梯度信号（来自 Critic 损失的决策导向梯度与来自增强选择的多样性导向梯度）将在共享参数空间产生干扰，可能引发类似第二章所分析的梯度冲突问题。将 PickNetwork 独立化，使其仅承担增强选择的概率建模任务，确保了其参数更新的梯度信号来源清晰单一——完全由 $\mathcal{L}_{Q_a}^{\text{PICK}}$ 驱动，避免了与 Actor/Critic 优化目标的梯度干扰。
+
+PickNetwork 由两个功能互补的子模块构成：紧凑特征提取模块（Encoder）负责将高维视觉特征压缩为低维、数值稳定的任务感知编码；概率预测模块（Choose Module）基于该编码通过多层非线性变换输出各增强方法的选用概率。两个模块协同运作，构成一个从视觉观测到增强选择概率的端到端可微映射，使 Critic 的梯度信号能够直接指导增强策略的自适应优化。
+
+\xsubsection{紧凑特征提取模块}{Compact Feature Extraction Module (Encoder)}
+
+Encoder 模块的功能是将 CNN 编码器 $f_\xi$ 所提取的高维视觉潜特征转化为数值稳定、紧凑的低维表征，为 Choose 模块的概率预测提供可靠的输入基础。其处理流程由线性降维、层归一化（Layer Normalization）与 Tanh 激活函数三个依次作用的运算单元构成。
+
+线性降维
+
+设 CNN 编码器输出的视觉潜特征为 $\mathbf{x} \in \mathbb{R}^{N \times D}$，其中 $N$ 为批量大小（Batch Size），$D$ 为原始特征维度（通常与隐层维度 $H$ 相同，为 1024）。线性降维层通过可学习的权重矩阵 $\mathbf{W}_e \in \mathbb{R}^{D \times F}$ 与偏置向量 $\mathbf{b}_e \in \mathbb{R}^F$（$F \ll D$，本文取 $F = 50$）将特征映射至低维特征空间：
+
+\begin{equation}
+    \tilde{\mathbf{x}} = \mathbf{x} \mathbf{W}_e + \mathbf{b}_e, \quad \tilde{\mathbf{x}} \in \mathbb{R}^{N \times F}
+\end{equation}
+
+线性降维的物理意义在于：高维视觉特征 $\mathbf{x}$ 中包含大量与增强选择决策无关的冗余信息（如精细纹理、绝对颜色值等），通过线性投影将其压缩至低维空间，一方面显著降低了后续计算的复杂度，使 PickNetwork 保持轻量化；另一方面，参数矩阵 $\mathbf{W}_e$ 的学习过程隐式完成了对任务相关判别特征的选择性保留，将增强选择所需的核心状态语义从冗余信息中分离。
+
+层归一化
+
+深度神经网络在训练过程中存在内部协变量偏移（Internal Covariate Shift）现象，即各层输入数据的分布随参数更新而持续变化，导致训练不稳定。相较于批归一化（Batch Normalization），层归一化（Layer Normalization）对每个样本在特征维度上独立进行归一化，不依赖批量统计量，因而在小批量训练或在线更新场景下具有更强的数值稳定性。设降维后特征向量为 $\tilde{\mathbf{x}}_i = (\tilde{x}_{i1}, \tilde{x}_{i2}, \ldots, \tilde{x}_{iF})$，其均值与方差分别为：
+
+\begin{equation}
+    \mu_i = \frac{1}{F} \sum_{k=1}^{F} \tilde{x}_{ik}, \quad \sigma_i^2 = \frac{1}{F} \sum_{k=1}^{F} \left( \tilde{x}_{ik} - \mu_i \right)^2
+\end{equation}
+
+归一化后的特征为：
+
+\begin{equation}
+    \hat{x}_{ik} = \frac{\tilde{x}_{ik} - \mu_i}{\sqrt{\sigma_i^2 + \epsilon}}
+\end{equation}
+
+其中，$\epsilon > 0$ 为数值稳定性常数，防止分母退化为零。层归一化将每个样本的特征分布标准化为零均值单位方差，有效压缩了 Encoder 输出的数值范围，使 Tanh 激活函数能够在其非饱和区域（梯度较大的区域）稳定工作，避免了梯度消失问题。
+
+Tanh 激活函数
+
+层归一化后的特征通过 Tanh 激活函数引入非线性因素：
+
+\begin{equation}
+    z_{ik} = \tanh(\hat{x}_{ik}) = \frac{e^{\hat{x}_{ik}} - e^{-\hat{x}_{ik}}}{e^{\hat{x}_{ik}} + e^{-\hat{x}_{ik}}}
+\end{equation}
+
+Tanh 函数将输入映射至有界区间 $(-1, 1)$，具有以下关键性质：其一，有界性确保了 Encoder 输出的紧凑特征编码 $\mathbf{z} \in \mathbb{R}^{N \times F}$ 在数值上始终处于受控范围，可有效防止梯度爆炸，维护反向传播的稳定性；其二，中心对称性（以原点为对称中心）使正负特征值均能得到充分利用，相较于 ReLU 对负值的截断处理能保留更多方向性信息；其三，光滑可微性保证了梯度从 Choose 模块到 Encoder 的连续反向传播。整个 Encoder 的处理流程可以紧凑地表达为：
+
+\begin{equation}
+    \mathbf{z} = \tanh\!\left(\mathrm{LayerNorm}\!\left(\mathbf{x}\mathbf{W}_e + \mathbf{b}_e\right)\right), \quad \mathbf{z} \in \mathbb{R}^{N \times F}
+\end{equation}
+
+Encoder 模块将高维视觉特征压缩为数值稳定的紧凑编码，为后续的概率预测奠定了输入基础。然而，从低维编码到增强方法选择概率的映射还需要捕捉增强类型与任务奖励之间的复杂非线性关系，这一任务由 Choose 模块完成。
+
+\xsubsection{概率预测模块}{Probability Prediction Module (Choose Module)}
+
+Choose 模块以 Encoder 输出的紧凑特征编码 $\mathbf{z}$ 为输入，通过两层隐含线性变换与 Softmax 归一化，输出增强方法集合上的选择概率分布。
+
+双层隐含变换
+
+Choose 模块的第一层隐含变换通过权重矩阵 $\mathbf{W}_1 \in \mathbb{R}^{F \times H}$ 与偏置向量 $\mathbf{b}_1 \in \mathbb{R}^H$ 对编码特征进行线性映射，并经 ReLU 激活函数进行非线性处理：
+
+\begin{equation}
+    \mathbf{h}_1 = \text{ReLU}(\mathbf{z} \mathbf{W}_1 + \mathbf{b}_1), \quad \mathbf{h}_1 \in \mathbb{R}^{N \times H}
+\end{equation}
+
+其中，$H$ 为隐层维度，$\text{ReLU}(x) = \max(0, x)$ 通过截断负值引入稀疏激活，增强特征的判别性与表征能力。在 Encoder 输出已经过 Tanh 有界处理的前提下，Choose 模块选用 ReLU 而非 Tanh，原因在于 ReLU 的稀疏激活特性有助于抑制无关特征，突出对当前任务增强选择最具判别力的特征维度，同时避免了 Tanh 在远离原点时梯度较小的饱和问题。第二层隐含变换在第一层输出上进行进一步的线性组合与精炼：
+
+\begin{equation}
+    \mathbf{h}_2 = \mathbf{h}_1 \mathbf{W}_2 + \mathbf{b}_2, \quad \mathbf{h}_2 \in \mathbb{R}^{N \times H}
+\end{equation}
+
+其中，$\mathbf{W}_2 \in \mathbb{R}^{H \times H}$，$\mathbf{b}_2 \in \mathbb{R}^H$。双层结构在网络容量与计算效率之间取得平衡：单层线性变换表达能力不足，难以捕捉增强类型与任务奖励之间的复杂非线性关系；而更深的网络虽理论表达能力更强，但会使 PickNetwork 的参数量显著增加，提高过拟合风险。
+
+Logits 计算与 Softmax 归一化
+
+隐含变换的输出经线性输出层映射为各增强方法对应的 Logit 值：
+
+\begin{equation}
+    \mathbf{l} = \mathbf{h}_2 \mathbf{W}_{\text{out}} + \mathbf{b}_{\text{out}}, \quad \mathbf{l} = (l_1, l_2, \ldots, l_n) \in \mathbb{R}^n
+\end{equation}
+
+其中，$n$ 为候选增强方法的总数（本章取 $n=8$），$l_i$ 表示第 $i$ 种增强方法在当前特征条件下的未归一化对数概率（Log-Unnormalized Probability）。Logit 值本身不受概率约束，可在整个实数域取值，从而为概率分布的灵活参数化提供足够的表达空间。最终，通过 Softmax 函数将 Logit 向量归一化为合法概率分布：
+
+\begin{equation}
+    p_i = \frac{\exp(l_i)}{\displaystyle\sum_{j=1}^{n} \exp(l_j)}, \quad i = 1, 2, \ldots, n
+\end{equation}
+
+输出概率向量 $\mathbf{p} = (p_1, p_2, \ldots, p_n)$ 满足 $p_i > 0$ 且 $\sum_{i=1}^n p_i = 1$，构成增强方法集合上的合法离散概率分布。Softmax 函数的关键优势在于其全局归一化性质：任意一个增强方法概率的提高必然伴随其他方法概率的相应降低，这一竞争机制迫使 PickNetwork 在训练过程中形成对增强方法的明确偏好，而非模糊的均等分配。此外，Softmax 输出对 Logit 值的导数为 $\partial p_i / \partial l_j = p_i(\delta_{ij} - p_j)$（$\delta_{ij}$ 为 Kronecker delta），保证了梯度能够连续地从概率值追溯至 Logit，进而追溯至 Encoder 参数，实现端到端的反向传播。
+
+Encoder 与 Choose 模块协同完成了从视觉观测到增强选择概率的端到端可微映射，但 PickNetwork 所输出的增强选择概率如何融入强化学习的策略优化流程，以及如何确保增强随机性不影响值函数估计的精度，仍需进一步设计。下一节将阐述 PICK 算法在 Actor-Critic 框架下的非对称策略优化机制。
+
+\xsubsection{非对称策略优化}{Asymmetric Policy Optimization}
+
+PickNetwork 输出增强选择概率后，需要将增强观测有效融入 Actor-Critic 的训练框架。然而，若 Actor 和 Critic 均直接使用增强观测，增强操作引入的随机扰动将通过贝尔曼自举被持续放大，导致 $Q$ 值目标方差急剧攀升。为此，PICK 借鉴非对称 Actor-Critic 的思想\cite{pinto2017asymmetric}，在 Actor 与 Critic 的参数更新中采用非对称观测输入策略，以在增强泛化性能的同时抑制 $Q$ 值目标方差。
+
+设 $o_t^{\text{aug}} = \text{aug}(o_t, v_t)$，$v_t \sim \mathbf{p}_t$ 为依据 PickNetwork 选择概率采样的增强观测，$f_e$ 为共享 CNN 编码器，定义两种编码流：
+
+\begin{equation}
+    p_t = f_e\!\left([o_t,\, o_t^{\text{aug}}]_N\right), \quad m_t = f_e\!\left([o_t,\, o_t]_N\right)
+\end{equation}
+
+其中，$[\cdot]_N$ 表示在批量维度 $N$ 上的拼接操作，$p_t \in \mathbb{R}^{2N \times d}$ 为包含增强信息的联合编码（$d$ 为编码维度），$m_t \in \mathbb{R}^{2N \times d}$ 为仅基于原始未增强观测的双流编码。
+
+在 Actor 的参数更新中，策略网络 $\pi_a$ 以包含增强观测信息的联合编码 $p_t$ 作为输入，同时感知原始观测与增强观测所构成的双流信息，迫使策略在多样化的视觉增强条件下保持动作选择的一致性，从而学习具备增强不变性（Augmentation Invariance）的鲁棒动作映射。Actor 的优化目标为：
+
+\begin{equation}
+    \mathcal{L}_{\pi_a}^{\text{PICK}}(D) = \mathbb{E}_{o_t \sim D}\!\left[ -Q_\theta\!\left( m_t,\, \pi_a(p_t) \right) \right]
+    \label{eq:actor_loss}
+\end{equation}
+
+其中，$Q$ 函数使用原始观测编码 $m_t$ 估计动作价值，而策略以联合编码 $p_t$ 输出动作，体现了观测输入的非对称性。基于 KL 散度形式的等价 Actor 策略优化目标与温度参数 $\alpha$ 的自适应调节目标分别定义为：
+
+\begin{equation}
+    \mathcal{L}_{\pi_\phi}^{\text{PICK}}(D) = \mathbb{E}_{o_t \sim D}\!\left[ D_{\text{KL}}\!\left( \pi_\phi(\cdot \mid p_t) \,\Big\|\, \exp\!\left\{ \frac{1}{\alpha} Q_\theta(m_t, \cdot) \right\} \right) \right]
+\end{equation}
+
+\begin{equation}
+    \mathcal{L}_\alpha^{\text{PICK}}(D) = \mathbb{E}_{a_t \sim \pi_\phi(\cdot|p_t),\, o_t \sim D}\!\left[ -\alpha \log \pi_\phi(a_t \mid p_t) - \alpha \bar{\mathcal{H}} \right]
+\end{equation}
+
+其中，$\bar{\mathcal{H}} = -\dim(\mathcal{A})$ 为预设目标熵。
+
+在 Critic 的参数更新中，在线 $Q$ 函数 $Q_\theta$ 同时接收包含增强信息的联合编码 $p_t$ 进行估计，而目标 $Q$ 函数 $Q_{\bar{\theta}}$ 在计算目标值时仅使用原始未增强观测 $f_e(o_{t+1})$：
+
+\begin{equation}
+    q_t^{\text{tgt}} = r(o_t, a_t) + \gamma \max_{a'} Q_{\bar{\theta}}\!\left( f_e(o_{t+1}),\, a' \right)
+    \label{eq:q_target}
+\end{equation}
+
+这一非对称设定的理论依据可从方差角度加以阐明。若对目标 $Q$ 值亦使用增强观测，则目标值的方差中将包含增强随机性所引入的额外分量：
+
+\begin{equation}
+    \mathrm{Var}(\tilde{q}_t^{\text{tgt}}) \geq \mathrm{Var}(q_t^{\text{tgt}}) + \gamma^2 \cdot \mathbb{E}\!\left[\left(\frac{\partial Q_{\bar{\theta}}}{\partial z}\right)^{\!2}\right] \cdot \mathrm{Var}\!\left(f_e(\text{aug}(o_{t+1}, v'))\right)
+\end{equation}
+
+方差的增加量由增强操作对编码表征的随机扰动经 $Q$ 函数梯度放大后决定。通过限制目标网络仅对无增强观测进行评估，相当于将增强随机性从 Bellman 更新目标中彻底剥离，有效降低了自举目标的方差。Critic 的优化目标为：
+
+\begin{equation}
+    \mathcal{L}_{Q_a}^{\text{PICK}}(D) = \mathbb{E}_{o_t, a_t, r_t, o_{t+1} \sim D}\!\left[ \left\| Q_\theta(p_t, a_t) - y_t \right\|^2 \right]
+    \label{eq:critic_loss}
+\end{equation}
+
+其中，$y_t = [q_t^{\text{tgt}}, q_t^{\text{tgt}}, \ldots, q_t^{\text{tgt}}]_N$ 为将目标 $Q$ 值在批量维度上复制 $N$ 份所得的目标向量，与 $p_t$ 中同时包含原始流与增强流的双批量结构相对应。非对称策略优化机制使 Actor 从增强多样性中获取泛化收益，同时保护 Critic 的值函数估计不受增强噪声干扰，但该机制尚未解决 PickNetwork 自身参数如何优化的问题。
+
+PickNetwork 的参数通过 Critic 目标函数 $\mathcal{L}_{Q_a}^{\text{PICK}}$ 的梯度反向传播进行端到端优化。在每次 Critic 参数更新时，$\mathcal{L}_{Q_a}^{\text{PICK}}$ 对 PickNetwork 各参数的偏导数驱动增强选择概率分布朝着降低 $Q$ 值估计误差的方向演化。梯度的完整传播路径如下：
+
+\begin{equation}
+    \mathcal{L}_{Q_a}^{\text{PICK}} \xrightarrow{\nabla} Q_\theta(p_t, a_t) \xrightarrow{\nabla} p_t \xrightarrow{\nabla} f_e([o_t, o_t^{\text{aug}}]) \xrightarrow{\nabla} o_t^{\text{aug}} \xrightarrow{\nabla} \mathbf{p}_t \xrightarrow{\nabla} \text{Choose}(\mathbf{z}) \xrightarrow{\nabla} \mathbf{z} \xrightarrow{\nabla} \text{Encoder}(\mathbf{x})
+\end{equation}
+
+对于 Encoder 模块线性层的参数 $\theta_l$（包含权重矩阵 $\mathbf{W}_e$ 与偏置 $\mathbf{b}_e$），梯度更新公式为：
+
+\begin{equation}
+    \theta_l \leftarrow \theta_l - \eta \frac{\partial \mathcal{L}_{Q_a}^{\text{PICK}}}{\partial \theta_l}
+\end{equation}
+
+其中，$\frac{\partial \mathcal{L}_{Q_a}^{\text{PICK}}}{\partial \theta_l}$ 由链式法则展开为：
+
+\begin{equation}
+    \frac{\partial \mathcal{L}_{Q_a}^{\text{PICK}}}{\partial \theta_l} = \frac{\partial \mathcal{L}_{Q_a}^{\text{PICK}}}{\partial \mathbf{z}} \cdot \frac{\partial \mathbf{z}}{\partial \hat{\mathbf{x}}} \cdot \frac{\partial \hat{\mathbf{x}}}{\partial \tilde{\mathbf{x}}} \cdot \frac{\partial \tilde{\mathbf{x}}}{\partial \theta_l}
+\end{equation}
+
+各因子中，$\partial \mathbf{z}/\partial \hat{\mathbf{x}} = \mathrm{diag}(1 - \tanh^2(\hat{\mathbf{x}}))$ 为 Tanh 的 Jacobian，$\partial \hat{\mathbf{x}}/\partial \tilde{\mathbf{x}}$ 为层归一化的 Jacobian，$\partial \tilde{\mathbf{x}}/\partial \theta_l$ 为线性层的 Jacobian。对于 Choose 模块第一隐层参数 $\theta_{h1}$（包含 $\mathbf{W}_1$，$\mathbf{b}_1$）与第二隐层参数 $\theta_{h2}$（包含 $\mathbf{W}_2$，$\mathbf{b}_2$），梯度更新公式为：
+
+\begin{equation}
+    \begin{aligned}
+        \theta_{h1} &\leftarrow \theta_{h1} - \eta \frac{\partial \mathcal{L}_{Q_a}^{\text{PICK}}}{\partial \theta_{h1}} \\[4pt]
+        \theta_{h2} &\leftarrow \theta_{h2} - \eta \frac{\partial \mathcal{L}_{Q_a}^{\text{PICK}}}{\partial \theta_{h2}}
+    \end{aligned}
+    \label{eq:picknets_update}
+\end{equation}
+
+其中，$\eta$ 为学习率。PickNetwork 的直觉性工作机制可理解为：若某种增强方法在特定任务状态下会导致 $Q$ 值估计偏差显著增大，则梯度下降将降低 Choose 模块对该增强方法所赋予的选择概率 $p_i$；反之，有助于降低 $Q$ 值误差的增强方法将被赋予更高概率。由于 Softmax 输出具有竞争性归一化性质，该学习过程等价于在候选增强方法集合上进行隐式的多臂老虎机（Multi-armed Bandit）优化，只是此处的"收益信号"来自 $Q$ 值估计精度而非直接的环境奖励。
+
+综合上述各模块的设计，PICK 算法的总损失函数由三个核心损失项组成：
+
+\begin{equation}
+    \mathcal{L}_{\text{total}} = \mathcal{L}_{Q_a}^{\text{PICK}} + \mathcal{L}_{\pi_a}^{\text{PICK}} + \mathcal{L}_\alpha^{\text{PICK}}
+\end{equation}
+
+其中，$\mathcal{L}_{Q_a}^{\text{PICK}}$（式~\eqref{eq:critic_loss}）为 Critic 损失，驱动 $Q$ 函数参数 $\theta$ 与 PickNetwork 参数 $\psi$ 的联合更新，使值函数估计趋于精确的同时引导增强选择概率分布的自适应演化；$\mathcal{L}_{\pi_a}^{\text{PICK}}$（式~\eqref{eq:actor_loss}）为 Actor 损失，驱动策略参数 $\phi$ 的更新，使策略在增强观测条件下选择最大化 $Q$ 值的动作；$\mathcal{L}_\alpha^{\text{PICK}}$ 为温度损失，自适应调节探索-利用权衡。三项损失分别作用于不同参数组，通过非对称观测设定实现了增强泛化性与训练稳定性的统一。
+
+PICK 算法的整体设计优势体现在三个层面：其一，PickNetwork 的独立化架构避免了增强选择梯度与值函数估计梯度之间的干扰，确保两类优化目标各自收敛；其二，非对称观测机制从信息论角度实现了增强多样性收益与 TD 目标方差控制之间的精确平衡；其三，Critic 梯度信号驱动的端到端学习使增强选择策略能够随任务奖励结构的变化而动态适配，无需人工调节。针对上述算法设计，下一节将给出具体的训练流程与实现细节。
+
+\xsection{算法实现}{Algorithm Implementation}
+
+前述各节从数学原理与设计动机层面阐述了 PICK 算法的核心组成，包括 PickNetwork 的 Encoder--Choose 双模块架构、非对称策略优化机制以及基于 Critic 梯度的增强选择更新。本节将上述设计落地为可执行的训练流程，给出 PICK 算法的完整伪代码及关键步骤的实现说明。
+
+PICK 算法的完整训练流程如算法 \ref{alg:pick} 所示。在每个训练时间步中，智能体首先与环境交互收集经验数据并存入经验回放缓冲区。随后从缓冲区采样小批量数据，依次执行 Critic 更新与 Actor 更新两个阶段。Critic 更新阶段的核心步骤包括：基于原始观测计算目标 $Q$ 值（如式~\eqref{eq:q_target}），通过 PickNetwork 采样增强方法并生成增强观测，构建联合编码 $p_i$ 与目标向量 $y_i$，最后通过 Critic 损失 $\mathcal{L}_{Q_a}^{\text{PICK}}$（如式~\eqref{eq:critic_loss}）同时更新 $Q$ 函数参数与 PickNetwork 参数（如式~\eqref{eq:picknets_update}）。Actor 更新阶段则构建纯原始观测编码 $m_i$，通过 Actor 损失 $\mathcal{L}_{\pi_a}^{\text{PICK}}$（如式~\eqref{eq:actor_loss}）更新策略参数。
+
+\begin{algorithm}[htbp]
     \SetAlgoLined
-    \KwData{this text}
-    \KwResult{how to write algorithm with \LaTeX2e }
-  
-    initialization\;
-    \While{not at end of this document}{
-      read current\;
-      \eIf{understand}{
-        go to next section\;
-        current section becomes this one\;
-        }{
-        go back to the beginning of current section\;
-        }
-      }
-    \caption{How to write algorithms}
-  \end{algorithm}
-\end{texcode}
-
-\begin{algorithm}[h]
-  \caption{Simulation-optimization heuristic}\label{algorithm}
-  \KwData{current period $t$, initial inventory $I_{t-1}$, initial capital $B_{t-1}$, demand samples}
-  \KwResult{Optimal order quantity $Q^{\ast}_{t}$}
-  $r\leftarrow t$\;
-  $\Delta B^{\ast}\leftarrow -\infty$\;
-  \While{$\Delta B\leq \Delta B^{\ast}$ and $r\leq T$}{$Q\leftarrow\arg\max_{Q\geq 0}\Delta B^{Q}_{t,r}(I_{t-1},B_{t-1})$\;
-  $\Delta B\leftarrow \Delta B^{Q}_{t,r}(I_{t-1},B_{t-1})/(r-t+1)$\;
-  \If{$\Delta B\geq \Delta B^{\ast}$}{$Q^{\ast}\leftarrow Q$\;
-  $\Delta B^{\ast}\leftarrow \Delta B$\;}
-  $r\leftarrow r+1$\;}
+    \KwData{环境交互步数 $T$，学习率 $\eta$，经验回放缓冲区 $D$，目标网络软更新率 $\tau$，增强方法集合 $\mathcal{V}$}
+    初始化 CNN 编码器 $f_\xi$，PickNetwork $z_\psi$，策略网络 $\pi_\phi$，$Q$ 函数 $Q_\theta$，目标 $Q$ 函数 $Q_{\bar{\theta}} \leftarrow Q_\theta$\;
+    \For{$t = 1, 2, \ldots, T$}{
+        $a_t \sim \pi_\phi(\cdot \mid o_t)$\;
+        $o_{t+1} \sim p(\cdot \mid o_t, a_t)$，收集奖励 $r_t$\;
+        $D \leftarrow D \cup \{(o_t, a_t, r_t, o_{t+1})\}$\;
+        从 $D$ 采样小批量 $\{(o_i, a_i, r_i, o_{i+1})\}_{i=1}^N$\;
+        \tcp{Critic 更新（同时更新 PickNetwork）}
+        $q_i^{\text{tgt}} = r_i + \gamma \max_{a'} Q_{\bar{\theta}}(f_\xi(o_{i+1}), a')$\;
+        $o_i^{\text{aug}} \leftarrow \text{aug}(o_i, v_i)$，$v_i \sim z_\psi(o_i)$\;
+        $p_i = f_\xi([o_i; o_i^{\text{aug}}]_N)$，$y_i = [q_i^{\text{tgt}}; q_i^{\text{tgt}}]_N$\;
+        $\theta,\psi \leftarrow \theta,\psi - \eta \nabla_{\theta,\psi} \mathcal{L}_{Q_a}^{\text{PICK}}(p_i, y_i)$\;
+        $\bar{\theta} \leftarrow (1-\tau)\bar{\theta} + \tau\theta$\;
+        \tcp{Actor 更新}
+        $m_i = f_\xi([o_i; o_i]_N)$\;
+        $\phi \leftarrow \phi - \eta \nabla_\phi \mathcal{L}_{\pi_\phi}^{\text{PICK}}(p_i, m_i)$\;
+    }
+    \caption{PICK 视觉 Actor-Critic 算法}
+    \label{alg:pick}
 \end{algorithm}
 
+上述训练流程的核心特征在于 Critic 更新与 PickNetwork 更新的同步执行：两者共享同一损失函数 $\mathcal{L}_{Q_a}^{\text{PICK}}$ 的梯度信号，PickNetwork 无需额外的辅助损失或独立的训练阶段，其增强选择偏好随 Critic 的值函数估计精度提升而逐步细化。这一设计使 PICK 的训练复杂度相较于基线 SAC 仅增加了 PickNetwork 前向传播与反向传播的边际计算开销，同时实现了增强策略从均匀随机到任务自适应的渐进演化，在训练稳定性与泛化能力之间取得有效平衡。
 
-\begin{algorithm}[H]
-  \KwData{this text}
-  \KwResult{how to write algorithm with \LaTeX2e }
-  initialization\;
-  \While{not at end of this document}{
-    read current\;
-    \Repeat{this end condition}{
-      do these things\;
-    }
-    \eIf{understand}{
-      go to next section\;
-      current section becomes this one\;
-    }{
-      go back to the beginning of current section\;
-    }
-    \Do{this end condition}{
-      do these things\;
-    }
-  }
-  \caption{How to write algorithms}
-\end{algorithm}
+\xsection{实验与评估}{Experiments and Evaluation}
+
+\xsubsection{实验环境与参数设置}{Experimental Environment and Hyperparameter Configuration}
+
+DMControl 训练环境
+
+本章在 DeepMind Control Suite（DMControl）\cite{tassa2018deepmind} 基准的六项连续控制任务上对 PICK 进行训练评估：Walker Walk（Walker 行走）、Walker Run（Walker 奔跑）、Cheetah Run（猎豹奔跑）、Quadruped Walk（四足行走）、Finger Spin（手指旋转）与 Cartpole Swingup（摆杆摆起）。上述任务的具体描述如表 \ref{tab:tasks} 所示，涵盖简单（Easy）与中等（Medium）两类难度等级，动作维度从 1 至 12 不等，具有代表性地覆盖了连续控制任务的典型挑战。智能体的观测输入为最近三帧 RGB 图像的帧堆叠（Frame Stack），观测维度为 $\mathbb{R}^{9 \times 84 \times 84}$，每轮（Episode）时长固定为 1000 个环境步骤，训练总步数为 3M 帧（Frames）。
+
+\begin{table}[htbp]
+    \centering
+    \caption{DMControl 任务描述}
+    \label{tab:tasks}
+    \begin{tabular}{lcc}
+        \hline
+        任务 & 动作维度 & 难度等级 \\
+        \hline
+        Walker Walk     & 6  & Easy \\
+        Walker Run      & 6  & Medium \\
+        Cheetah Run     & 6  & Medium \\
+        Quadruped Walk  & 12 & Medium \\
+        Finger Spin     & 2  & Easy \\
+        Cartpole Swingup & 1 & Easy \\
+        \hline
+    \end{tabular}
+\end{table}
+
+DMC-GB2 测试基准
+
+为评估策略在分布外视觉变换下的泛化能力，采用 DeepMind Control Suite 泛化基准第二版（DMControl-Generalization Benchmark 2, DMC-GB2）\cite{hansen2021generalization}作为零样本（Zero-Shot）迁移测试环境。DMC-GB2 在标准 DMControl 的基础上引入了更广泛的光度与几何测试分布，是目前视觉强化学习泛化研究中最具挑战性的基准之一。本章重点评估以下两类高难度测试环境：
+\begin{itemize}
+    \item Color\_hard（颜色扰动测试）：对背景纹理与智能体自身颜色施加随机高强度变换，包括全局色调偏移、饱和度调整与明度扰动等，测试策略对光度分布偏移的鲁棒性。
+    \item Rotate\_hard（旋转扰动测试）：对整体观测画面施加随机大角度旋转变换（最大旋转角度可达 $180^\circ$），不仅改变了图像的空间布局，还破坏了图像边缘区域的完整性，测试策略对几何分布偏移的鲁棒性。
+\end{itemize}
+
+所有方法均在固定训练环境中完成训练后，直接在测试环境中进行零样本评估，不进行任何额外的领域自适应或微调。
+
+数据增强方法集合
+
+本章所使用的增强方法集合 $\mathcal{V}$ 涵盖几何增强与光度增强两类，共八种方法：
+\begin{itemize}
+    \item 几何增强：随机平移（Random Translation）\cite{laskin2020reinforcement}、随机缩放（Random Scaling）、随机旋转（Random Rotation）、旋转后平移组合（Rotate + Translate）。
+    \item 光度增强：随机卷积（Random Convolution）\cite{lee2019network}、随机遮挡（Random Occlusion）、随机频率掩盖（Random Frequency Masking）、卷积后遮挡组合（Convolution + Occlusion）。
+\end{itemize}
+
+随机频率掩盖通过对图像进行快速傅里叶变换（FFT）后随机置零特定频带的系数，再经逆变换还原图像，迫使智能体学习对频率结构扰动具有不变性的特征；随机缩放则在 $[0.8, 1.2]$ 的尺度范围内对图像进行随机比例缩放并裁剪至原始尺寸，增强对目标尺度变化的适应能力。所有对比基线算法均在相同的增强方法集合上进行评估，以保证比较的公平性。
+
+超参数设置
+
+所有算法在全部任务上采用统一的超参数配置，如表 \ref{tab:hyperparams} 所示。所有实验以 5 个不同随机种子（Random Seed）运行，报告轮均奖励（Episode Reward）的均值与标准差。
+
+\begin{table}[htbp]
+    \centering
+    \caption{超参数设置}
+    \label{tab:hyperparams}
+    \begin{tabular}{lc}
+        \hline
+        超参数 & 设定值 \\
+        \hline
+        经验回放缓冲区容量 & $10^6$ \\
+        动作重复次数（Action Repeat） & 2 \\
+        帧堆叠数 & 3 \\
+        初始探索帧数（Seed Frames） & 4000 \\
+        探索步数（Exploration Steps） & 2000 \\
+        小批量大小 & 256 \\
+        折扣因子 $\gamma$ & 0.99 \\
+        优化器 & Adam \\
+        学习率 & $5 \times 10^{-4}$ \\
+        智能体更新频率 & 2 \\
+        Critic 目标网络软更新率 $\tau$ & 0.01 \\
+        特征维度 $F$ & 50 \\
+        隐层维度 $H$ & 1024 \\
+        Actor 对数标准差范围 & $[-10, 2]$ \\
+        初始温度系数 $\alpha$ & 0.1 \\
+        最大随机平移像素数 & $16 \times 16$ \\
+        最大随机旋转角度 & $180^\circ$ \\
+        随机叠加透明度（Alpha） & 0.5 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+对比基线方法
+
+本章将 PICK 与以下四种先进方法进行系统对比：(1) DrQ\cite{kostrikov2020image}：在 SAC 框架中融入随机平移弱增强并对 $Q$ 值目标取均值，代表弱增强基线；(2) RAD\cite{laskin2020reinforcement}：将多种增强方法以随机均等概率应用于训练观测，无任务感知选择；(3) SVEA\cite{hansen2021stabilizing}：通过修改 $Q$ 目标形式（仅使用无增强观测计算目标值）缓解强增强导致的不稳定性，但增强选择策略仍为任务无关的均等随机；(4) SADA\cite{almuzairee2024recipe}：通过自监督辅助目标与增强数据适配测试阶段的视角变化。
+
+\xsubsection{样本效率与训练稳定性分析}{Sample Efficiency and Training Stability Analysis}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{c3/FIG2.jpg}
+    \caption{PICK 与基线算法在六项 DMControl 任务上的样本效率对比曲线（横轴为训练帧数，纵轴为轮均奖励，误差带表示 5 个随机种子的标准差）。}
+    \label{fig:sample_efficiency}
+\end{figure}
+
+图 \ref{fig:sample_efficiency} 对比了 PICK 与四种基线算法在训练环境中的样本效率曲线。实验结果表明，PICK 在全部六项任务上均展现出最快的收敛速度与最高的最终轮均奖励，具体分析如下。
+
+在 Walker Run 任务中，PICK 在约 0.8M 帧时已达到约 600 的轮均奖励，而 SADA 与 SVEA 在同等帧数下仍处于快速上升阶段，RAD 与 DrQ 则长期停滞于 200 以下。这一差距说明，PICK 通过任务感知选择在训练早期有效抑制了随机卷积等对 Walker Run 任务具有强破坏性的增强，使 Critic 的 $Q$ 值估计能够在低方差的 Bellman 目标下快速收敛。在 Finger Spin 任务中，PICK 在 1M 帧时接近 1000 的满奖励上限，展示出极强的快速收敛能力；该任务的动作维度仅为 2，策略对增强噪声较为敏感，PICK 对破坏性增强的主动回避在此体现了显著价值。
+
+在 Walker Walk 任务中，PICK 最终收敛至约 1000（接近满分），而 SADA 约 800，SVEA 约 600，RAD 与 DrQ 低于 400。值得注意的是，SVEA 尽管与 PICK 同样采用非增强目标值计算策略，但由于其未对增强类型进行任务感知选择，仍然将大角度旋转等几何增强等概率应用于 Walker Walk，导致样本效率明显落后。在 Cheetah Run 与 Cartpole Swingup 任务中，PICK 同样以更快的早期上升速率与更高的最终收敛水平领先于所有基线，进一步验证了任务感知增强选择在不同任务复杂度场景下的普适有效性。在 Quadruped Walk 这一动作维度最高（12 维）的复杂任务中，PICK 的优势同样显著，表明 PickNetwork 能够在高维动作空间下稳定学习任务适配的增强偏好。
+
+PICK 实现上述优越样本效率的核心机制在于：PickNetwork 通过 Critic 梯度信号逐步识别并抑制对当前任务 $Q$ 值估计造成高方差扰动的破坏性增强（如强几何变换），优先为语义相容的增强方法（如随机平移、随机频率掩盖）赋予更高选择概率，使 Critic 网络能够在更低方差的 TD 目标下进行稳定的值函数估计，从而同步提升了策略梯度的可靠性与样本的利用效率。
+
+\xsubsection{跨环境泛化性能评估}{Cross-Environment Generalization Performance Evaluation}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{c3/FIG3.jpg}
+    \caption{DMC-GB2 测试环境中颜色变换（Color\_hard，上行）与旋转变换（Rotate\_hard，下行）的视觉示意图。}
+    \label{fig:test_envs}
+\end{figure}
+
+颜色扰动鲁棒性
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{c3/FIG4.jpg}
+    \caption{在 DMC-GB2 Color\_hard 测试环境下，PICK 与基线算法的零样本泛化性能对比曲线。}
+    \label{fig:color_generalization}
+\end{figure}
+
+在 Color\_hard 颜色扰动测试环境下（图 \ref{fig:color_generalization}），PICK 在全部六项任务上均展现出对光度分布偏移的显著鲁棒性。如表 \ref{tab:color_hard} 所示，PICK 在 Walker Walk（$871 \pm 28$）、Walker Run（$451 \pm 48$）、Cartpole Swingup（$751 \pm 35$）、Cheetah Run（$442 \pm 86$）与 Quadruped Walk（$621 \pm 47$）任务上均取得最高分，仅在 Finger Spin 任务上以 $884 \pm 15$ 略低于 SADA（$895 \pm 19$），但差距在统计误差范围内。
+
+从任务维度逐一分析：在 Walker Walk 任务中，PICK（$871$）较第二名 SADA（$804$）提升约 8.3\%，较 DrQ（$274$）提升约 218\%，说明在颜色扰动下弱增强基线的泛化能力极为有限；在 Cheetah Run 任务中，PICK（$442$）相较 SADA（$364$）提升约 21\%，SVEA 与 RAD 在该任务上颜色泛化性能极低（均在 $112$ 以下），反映出其增强策略缺乏对 Cheetah Run 高速运动动力学的光度适配能力；在 Quadruped Walk 任务中，PICK 以 $621 \pm 47$ 大幅领先 SADA（$445$），显示出 PickNetwork 对高维控制任务的光度不变性学习具有较强的泛化适应能力。
+
+PICK 在颜色变换场景下优越泛化性能的来源在于：PickNetwork 在训练过程中为随机频率掩盖、随机卷积等光度增强方法赋予了较高的选择概率，迫使策略网络学习对颜色通道统计特性的分布不变性表征，使其在面对测试环境的高强度颜色扰动时仍能提取与任务奖励相关的视觉语义特征。
+
+\begin{table}[htbp]
+    \centering
+    \caption{Color\_hard 测试结果（轮均奖励，格式为均值 $\pm$ 标准差，粗体表示最优值）}
+    \label{tab:color_hard}
+    \begin{tabular}{lccccc}
+        \hline
+        任务 & DrQ & SVEA & RAD & SADA & PICK \\
+        \hline
+        Walker Walk     & $274 \pm 89$  & $388 \pm 21$  & $435 \pm 22$  & $804 \pm 39$  & \textbf{$871 \pm 28$} \\
+        Walker Run      & $82 \pm 7$    & $194 \pm 44$  & $231 \pm 14$  & $395 \pm 24$  & \textbf{$451 \pm 48$} \\
+        Finger Spin     & $788 \pm 75$  & $836 \pm 96$  & $805 \pm 74$  & \textbf{$895 \pm 19$} & $884 \pm 15$ \\
+        Cartpole Swingup & $203 \pm 21$ & $597 \pm 125$ & $406 \pm 102$ & $704 \pm 86$  & \textbf{$751 \pm 35$} \\
+        Cheetah Run     & $101 \pm 17$  & $112 \pm 21$  & $107 \pm 6$   & $364 \pm 94$  & \textbf{$442 \pm 86$} \\
+        Quadruped Walk  & $64 \pm 39$   & $249 \pm 88$  & $382 \pm 33$  & $445 \pm 54$  & \textbf{$621 \pm 47$} \\
+        \hline
+    \end{tabular}
+\end{table}
+
+旋转扰动鲁棒性
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{c3/FIG5.jpg}
+    \caption{在 DMC-GB2 Rotate\_hard 测试环境下，PICK 与基线算法的零样本泛化性能对比曲线。}
+    \label{fig:rotate_generalization}
+\end{figure}
+
+在 Rotate\_hard 旋转扰动测试环境下（图 \ref{fig:rotate_generalization}），PICK 在全部六项任务上均取得最高轮均奖励（表 \ref{tab:rotate_hard}）。值得关注的是，SVEA 在旋转测试中的表现尤为薄弱（Walker Walk 仅得 $42 \pm 16$，Finger Spin 仅得 $109 \pm 88$），这与 SVEA 原文所指出的其在几何增强场景下性能不佳的特点相吻合——SVEA 通过将非域图像叠加于观测的光度增强机制仅能提升对颜色扰动的不变性，而对旋转几何变换几乎没有训练覆盖。
+
+从具体任务分析：在 Cheetah Run 旋转测试中，PICK 以 $552 \pm 88$ 领先 SADA（$501 \pm 51$）约 10\%，而 DrQ、SVEA、RAD 三种方法均仅得 50--90 分，显示出在高速动态任务中几何不变性表征的极端重要性；在 Cartpole Swingup 任务中，PICK（$812$）较 SADA（$745$）提升约 9\%，且在 0--1M 帧的训练早期即表现出明显更快的奖励上升，体现了 PickNetwork 对旋转增强快速激活偏好的学习能力；在 Finger Spin 任务中，PICK 以 $902 \pm 12$ 的高分与极低方差领先，充分体现了在精密动态控制场景中任务感知增强选择对几何鲁棒性的贡献。在 Quadruped Walk 任务中，PICK（$405$）较 SADA（$336$）提升约 20.5\%，表明在高维肢体控制任务中几何增强的有效调度能显著提升对旋转分布的覆盖深度。
+
+\begin{table}[htbp]
+    \centering
+    \caption{Rotate\_hard 测试结果（轮均奖励，格式为均值 $\pm$ 标准差，粗体表示最优值）}
+    \label{tab:rotate_hard}
+    \begin{tabular}{lccccc}
+        \hline
+        任务 & DrQ & SVEA & RAD & SADA & PICK \\
+        \hline
+        Walker Walk      & $68 \pm 28$   & $42 \pm 16$   & $377 \pm 26$  & $827 \pm 27$   & \textbf{$835 \pm 29$} \\
+        Walker Run       & $52 \pm 15$   & $126 \pm 89$  & $201 \pm 47$  & $379 \pm 62$   & \textbf{$441 \pm 59$} \\
+        Finger Spin      & $411 \pm 236$ & $109 \pm 88$  & $201 \pm 139$ & $879 \pm 23$   & \textbf{$902 \pm 12$} \\
+        Cartpole Swingup & $203 \pm 7$   & $206 \pm 81$  & $198 \pm 23$  & $745 \pm 79$   & \textbf{$812 \pm 81$} \\
+        Cheetah Run      & $52 \pm 19$   & $89 \pm 53$   & $68 \pm 22$   & $501 \pm 51$   & \textbf{$552 \pm 88$} \\
+        Quadruped Walk   & $41 \pm 16$   & $117 \pm 42$  & $244 \pm 38$  & $336 \pm 112$  & \textbf{$405 \pm 94$} \\
+        \hline
+    \end{tabular}
+\end{table}
+
+综合颜色与旋转两类测试结果，PICK 在光度与几何双类型分布外扰动下均取得了领先性能，验证了任务感知增强选择机制在同时提升光度不变性与几何不变性方面的有效性。相比之下，SVEA 仅针对 $Q$ 目标形式进行修改而缺乏几何增强的显式调度，故在旋转测试中表现不佳；SADA 虽借助自监督辅助目标取得较好的整体性能，但其固定的增强策略无法动态适配不同任务的扰动结构，在多项任务上仍落后于 PICK。这一对比进一步表明，增强选择策略的任务感知动态性是同时解决光度与几何泛化问题的关键所在。
+
+\xsubsection{算法消融实验}{Ablation Study}
+
+为定量分析 PICK 核心设计的各组成部分对最终性能的贡献，本节在 Walker Run 任务上开展系统性消融实验，从两个维度验证 PICK 设计的合理性：PickNetwork 选择机制的整体有效性，以及几何增强与光度增强对各自泛化维度的选择性贡献。
+
+移除 PICK 机制对样本效率的影响
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{c3/FIG6.jpg}
+    \caption{消融实验：使用 PICK 机制（紫色）与不使用 PICK 机制（绿色）在 Walker Run 任务上的样本效率对比。}
+    \label{fig:ablation_efficiency}
+\end{figure}
+
+图 \ref{fig:ablation_efficiency} 对比了 Walker Run 任务中使用 PICK 机制与移除 PICK 机制（Without PICK，退化为在完整增强集合上进行均匀随机选择）时的样本效率曲线。结果显示，使用 PICK 机制时，训练曲线在早期帧（前 0.5M）即呈现显著快于均匀选择基线的奖励增长速率，并在后续训练阶段收敛至更高的最终奖励水平。移除 PICK 机制后，均匀增强选择无法抑制随机卷积、强旋转等破坏性增强操作对 $Q$ 值估计的高方差干扰，导致收敛速度与最终性能的双重下降。这一对比直接验证了两个结论：其一，单纯引入多样化的强增强方法集合而不加以任务感知选择，并不能自动带来样本效率的提升，甚至可能因高方差 TD 目标而损害训练效率；其二，PickNetwork 的自适应选择机制是从多样化增强集合中有效提取泛化收益、同时维护训练稳定性的关键要素。
+
+仅保留单一类型增强的泛化性能分析
+
+为进一步验证 PICK 方法对不同类型增强的组合适应能力，本节设计了两组消融实验：(1) 移除所有几何类增强（pick without geo aug），仅保留四种光度类增强（随机卷积、随机遮挡、随机频率掩盖、卷积+遮挡组合）；(2) 移除所有光度类增强（pick without photo aug），仅保留四种几何类增强（随机平移、随机缩放、随机旋转、旋转+平移组合）。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{c3/FIG7.jpg}
+    \caption{消融实验：仅保留光度增强（移除旋转类增强）时在颜色泛化与旋转泛化测试上的性能对比。}
+    \label{fig:ablation_color}
+\end{figure}
 
 
 
-\xsection{导入代码}{Input codes}
+消融实验结果汇总于表 \ref{tab:ablation}，实验结果揭示了如下规律性结论：
 
-从现有文件导入源码，使用 \clist[columbiablue]{lstlisting} 宏包，本模板预先定义了一基本格式 \clist{sty_basic} 以供使用，可以自定义新的样式。
+\begin{table}[htbp]
+    \centering
+    \caption{消融实验泛化能力结果（Walker Run 任务，格式为均值 $\pm$ 标准差）}
+    \label{tab:ablation}
+    \begin{tabular}{lcc}
+        \hline
+        配置 & 颜色泛化 & 旋转泛化 \\
+        \hline
+        不使用 PICK（均匀随机）   & $94 \pm 44$    & $106 \pm 89$ \\
+        PICK（仅光度增强）        & $460 \pm 20$   & $87 \pm 66$ \\
+        PICK（仅几何增强）        & $32 \pm 10$    & $435 \pm 44$ \\
+        PICK（完整增强集合）      & \textbf{$451 \pm 48$} & \textbf{$441 \pm 59$} \\
+        \hline
+    \end{tabular}
+\end{table}
 
-\begin{texcodeonly}
-\lstinputlisting[style=sty_basic,
-  language=matlab,
-  caption={标准粒子群算法},
-  label={lst:a_label}]{./Codes/pso.m}
-\end{texcodeonly}
-\lstinputlisting[style=sty_basic,
-                    language=matlab,
-                    caption={标准粒子群算法},
-                    label={lst:a_label}]{./Codes/pso.m}
+\begin{itemize}
+    \item 增强类型的选择性泛化贡献：仅使用光度增强时，颜色泛化性能（$460 \pm 20$）接近完整配置水平，但旋转泛化性能（$87 \pm 66$）极低，接近于不使用 PICK 的基线；仅使用几何增强时，旋转泛化性能（$435 \pm 44$）接近完整配置水平，但颜色泛化性能（$32 \pm 10$）几乎完全丧失。这一高度对称的结果与视觉不变性理论相符：光度增强为策略提供了对颜色统计特性变化的不变性训练信号，几何增强提供了对空间变换的不变性信号，两类信号在各自对应的泛化维度上相互不可替代。
+
+    \item PICK 对单一类型增强的兼容性：无论仅保留哪类增强，配合 PICK 机制的结果均显著优于不使用 PICK 的均匀选择基线（$94 \pm 44$ / $106 \pm 89$），且方差显著更小。这证明 PickNetwork 的任务感知选择能力对多种增强组合均具有普适性：即使在增强种类受限的情况下，PickNetwork 亦能在有限的候选方法中识别对当前任务最有益的增强，抑制有害增强，充分发挥所提供增强的价值。
+    
+    \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{c3/FIG8.jpg}
+    \caption{消融实验：仅保留几何增强（移除颜色类增强）时在颜色泛化与旋转泛化测试上的性能对比。}
+    \label{fig:ablation_rotate}
+    \end{figure}
+
+    \item 完整增强集合的综合优势：只有同时包含几何与光度两类增强的完整配置，才能在颜色泛化与旋转泛化两项指标上均达到较高水平（$451$ / $441$），体现了多样化增强组合对全面泛化能力的必要性。完整配置相较于"仅光度增强"在旋转测试上提升约 406\%，相较于"仅几何增强"在颜色测试上提升约 1309\%，充分说明两类增强在 PICK 的协调调度下具有互补共强效应。
+\end{itemize}
+
+\xsection{本章小结}{Chapter Summary}
+
+本章围绕视觉强化学习中"泛化性能与样本效率/训练稳定性不可兼得"这一核心困境，深入分析了现有任务无关增强方法的理论缺陷，提出了任务感知型数据增强选择方法 PICK，并通过系统的实验评估验证了其有效性。
+
+在问题分析层面，本章从 TD 自举方差的角度定量阐明了强数据增强破坏训练稳定性的机理：强增强操作在相邻时间步引入的独立随机扰动，通过贝尔曼自举被持续放大为 $Q$ 值目标的高频震荡，而现有任务无关增强策略对此无感知、无调节能力。不同增强类型对动作分布影响的本质差异，进一步说明了任务感知增强选择的必要性。
+
+在算法设计层面，PICK 引入 PickNetwork 作为独立的增强选择模块，通过 Encoder 模块的线性降维--层归一化--Tanh 激活流程将高维视觉特征压缩为数值稳定的任务感知编码，再经 Choose 模块的双层 ReLU 网络与 Softmax 归一化输出增强选择概率分布。PickNetwork 的参数更新由 Critic 目标函数 $\mathcal{L}_{Q_a}^{\text{PICK}}$ 的梯度信号端到端驱动，使增强策略随任务奖励结构的演化而自适应调整。非对称 Actor-Critic 架构通过限制目标 $Q$ 值仅在原始未增强观测流上估计，从根本上切断了增强随机性对 Bellman 目标方差的污染路径，维护了强增强场景下的训练稳定性。两种新型增强方法——随机频率掩盖与随机缩放——的引入进一步丰富了 PickNetwork 的候选选择空间，覆盖了频率扰动与尺度变换两类原有方法库未充分探索的场景。
+
+在实验评估层面，PICK 在 DMControl 六项连续控制任务上展现出最优的样本效率，并在 DMC-GB2 的 Color\_hard 与 Rotate\_hard 两类高难度分布外测试环境中全面超越 DrQ、RAD、SVEA、SADA 等先进基线。消融实验定量验证了 PickNetwork 自适应选择机制的核心贡献，以及几何增强与光度增强对各自对应泛化维度的选择性互补规律。
+
+上述结果表明，PICK 方法通过将任务感知能力注入数据增强选择过程，成功突破了传统任务无关增强策略在"泛化与稳定"之间被动权衡的固有局限，实现了对策略泛化能力的主动塑造，为视觉强化学习在高度不确定的分布外环境中的鲁棒部署提供了一条切实可行的方法路径。需要指出的是，PickNetwork 的选择粒度目前仍限于增强方法级别的离散概率分配，未能对单一增强方法的内部参数（如旋转角度范围、卷积核强度）进行连续的任务自适应调节，这一方向构成了后续工作的重要拓展空间。

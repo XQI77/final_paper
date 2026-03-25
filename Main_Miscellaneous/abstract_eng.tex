@@ -3,35 +3,16 @@
 \footnotetext{*The work was supported by the Foundation (foundation ID).}
 % \astfootnote{The work was supported by the Foundation (foundation ID).}
 
-英文摘要撰写要求如下：
+Reinforcement Learning (RL) is an important research direction in machine learning that learns optimal decision-making policies through agent-environment interaction, achieving remarkable results in tasks such as game playing and control. However, existing algorithms commonly rely on ideal observation conditions, and face prominent challenges brought by complex observations when deployed in real environments. In visual reinforcement learning, high-dimensional image observations are susceptible to interference from task-irrelevant features such as background and lighting; data augmentation without task guidance can improve generalization but simultaneously destroys task-critical information, resulting in low sample efficiency and training instability. In offline reinforcement learning, policies are trained on fully observable datasets, yet the deployment environment typically exhibits partial observability, where state dimensions become invisible due to unknown masking patterns; the discrepancy between training and deployment observations leads to value overestimation and policy performance degradation. Both issues severely restrict the reliable deployment of reinforcement learning in real-world non-stationary environments. To this end, this paper proposes two algorithms targeting the above two types of observation challenges respectively:
 
-（1）用词准确，符合语法；
+\begin{enumerate}[label=\arabic*)]
+    \item To address the training instability and sample inefficiency caused by inappropriate data augmentation usage in visual reinforcement learning, a Task-Perceptive Data Augmentation Selection method (PICK) is proposed. First, a compact representation of high-dimensional observations is extracted via a feature encoder, and a prediction network dynamically learns the optimal selection probability of each augmentation method under the current task, constructing an adaptive augmentation selection mechanism. This mechanism then automatically suppresses destructive augmentation operations while preserving data diversity, achieving a balance between augmentation benefit and information fidelity. Experiments demonstrate that PICK exhibits superior generalization performance on unseen visual scenarios of the DMControl-GB2 benchmark, significantly outperforming state-of-the-art algorithms in both training stability and sample efficiency.
 
-（2）关键词按相应专业的标准术语写出，尽量从《英语主题词表》中摘选；
-
-（3）如果论文的主体工作得到了有关基金资助，应用英文在摘要第一页的页脚处标注：本研究得到某某基金（编号：）资助；
-
-中文摘要和英文摘要均不要求学位申请人及其指导教师签字。
-
-摘要正文每段开头不空格，每段之间空一行；\newline
-
-The key parts in drip irrigation facilities are emitters. The structural design parameters of emitters can directly affect its performance and the function of the whole drip irrigation system …… 
-\newline
-
-\begin{enumerate}[wide,leftmargin=0pt,itemsep=\baselineskip]
-    \item Because……
-    \item Only ……
-    \item To support ……
+    \item To address the fragile policy generalization caused by partial observation missing in offline reinforcement learning, a robust offline reinforcement learning method based on self-supervised masked reconstruction (Masked-IQL) is proposed. First, a robust masked representation learning mechanism is constructed: learnable mask tokens replace zero-value padding to eliminate semantic ambiguity of missing dimensions; random mask ratio sampling enables the encoder to adapt to a wide range of missing rates; LayerNorm and consistency loss constrain the alignment of incomplete representations toward complete representations; and a lightweight historical window aggregation module is incorporated to effectively leverage temporal information. Second, a two-phase decoupled training framework is proposed to separate representation learning from policy optimization, eliminating the interference of temporal-difference gradients on the representation structure via gradient truncation. Experiments demonstrate that Masked-IQL exhibits superior generalization performance and robustness across various partial observability scenarios.
 \end{enumerate}
 
-\englishKeywords{XXX; XXX; XXX; XXX}
+\englishKeywords{Reinforcement learning; Complex observation environments; Representation learning; Data augmentation; Offline reinforcement learning; Partially observable decision process}
 
-每个关键词组的第一个字母大写，其余为小写，每一关键词之间用分号分开，最后一个关键词后不打标点符号。例如：Drip irrigation emitter; RP\&M; Hydraulics; Labyrinth flow channel\newline
-
-\englishType{XXXX}
-
-须与中文摘要中的论文类型一致；每个单词第一个字母大写，其余为小写。例如：Applied Research
-
-论文类型包括：a.理论研究(Theoretical Research)；b.应用基础(Application Fundamentals)；c.应用研究(Application Research)；d.研究报告(Research Report)；e.设计报告(Design Report)；f.案例分析(Case Study)；g.调研报告(Investigation Report)；h.产品研发(Product Development)；i.工程设计(Engineering Design)；j.工程/项目管理(Engineering/Project Management)；k.其它（Others）。
+\englishType{Theoretical Research}
 
 \end{englishabstract}

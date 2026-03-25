@@ -1,64 +1,594 @@
 % !TeX root = ../main.tex
 
-\xchapter{参考文献与交叉引用}{Crossreferences}
+\xchapter{基于掩码重建的鲁棒离线强化学习方法}{Robust Offline Reinforcement Learning via Masked Reconstruction}
 
-注意，当引用时出现 [?] 时，请注意查看辅助文件是否正常生成，此种问题不是模板造成的，请自行解决。
+\xsection{引言}{Introduction}
 
-\xsection{公式、图表的引用}{Ref equations, tables or figures}
+离线强化学习（Offline Reinforcement Learning）\cite{levine2020offline}旨在仅利用预先收集的静态数据集学习决策策略，无需与环境进行在线交互，为数据驱动的智能控制提供了一条安全且经济高效的方法路径。近年来，以 Conservative Q-Learning（CQL）\cite{kumar2020conservative}、Implicit Q-Learning（IQL）\cite{kostrikov2022offline} 与 Batch-Constrained Q-Learning（BCQ）\cite{fujimoto2019off} 为代表的离线强化学习算法在标准基准上取得了显著进展，其核心贡献在于通过对值函数的保守估计或对策略的隐式约束，有效缓解了分布外动作（Out-of-Distribution Actions）查询所引发的值函数过估计问题。
 
-\xsubsection{引用公式}{Ref equations}
+然而，上述方法在问题建模上均隐含一个关键假设：训练数据集中的状态观测是完整的（Full Observability），且测试阶段智能体同样能够获取完整的状态信息。这一假设在真实部署场景中往往难以成立。在实际应用中，由于观测通道的随机失效、通信带宽的动态约束或环境遮蔽等因素，智能体在测试阶段可能仅能获取原始状态空间的部分维度，即环境从训练时的完全可观测马尔可夫决策过程（MDP）退化为带有未知掩码观测函数（Masked Observation Functions）的部分可观测马尔可夫决策过程（POMDP）\cite{kaelbling1998planning}。这一训练-测试之间的可观测性落差构成了一种特殊的协变量偏移（Covariate Shift），导致在完整状态下训练的策略在面对残缺观测时发生严重的特征坍塌（Feature Collapse）与决策失效。如图 \ref{fig:pomdp} 所示，智能体在训练阶段可获取完整的状态观测，而在部署阶段由于传感器失效等因素仅能观测到部分状态维度，这一可观测性的落差是导致策略性能退化的根本原因。
 
-引用公式使用 \clist{\eqref{label}} 命令，将引用公式的编号（带括号）：
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{c4/POMDP示意图.png}
+    \caption{掩码部分可观测马尔可夫决策过程（Masked POMDP）示意图。训练阶段智能体基于完整状态进行策略学习，而测试阶段部分状态维度因未知掩码函数被遮蔽，导致观测从完全可观测退化为部分可观测。}
+    \label{fig:pomdp}
+\end{figure}
 
-\begin{texcode}[]{}
-  如式 \eqref{eqn:c1:diff} 所示
-\end{texcode}
+现有文献中针对上述问题的应对策略存在明显局限。最朴素的零值填充（Zero Imputation）方法将缺失维度简单置零后送入策略网络，但由于零值本身可能承载物理含义（如零速度、零加速度），这一做法将在特征空间中引入系统性偏差，使策略输出偏离最优动作分布。基于循环神经网络（Recurrent Neural Network, RNN）的历史编码方法\cite{hausknecht2015deep}试图通过聚合历史观测序列来推断当前隐藏状态，但其在离线数据集上的训练面临两重困难：其一，离线数据集中的轨迹长度与采集策略的多样性制约了 RNN 的时序建模能力；其二，RNN 的序列推理引入了额外的计算延迟与内存开销，且其门控机制对缺失模式的泛化能力有限。更为根本的是，传统离线强化学习算法（如 CQL、IQL）的理论分析框架仅关注动作空间的分布外问题，对状态空间的分布外扰动——特别是由部分可观测性引起的状态维度缺失——缺乏系统性的建模与处理机制。近期，Gu 等人\cite{gu2023order}提出了 ORDER 框架，首次系统性地研究了离线强化学习在掩码部分可观测场景下的泛化问题。ORDER 采用基于 VQ-VAE\cite{van2017neural}的离散状态表征，通过三阶段串行训练范式实现了对多种掩码观测函数的鲁棒泛化。然而，ORDER 存在若干局限：离散量化不可避免地引入信息损失，在状态空间维度较高时表征精度受限；三阶段串行训练使表征学习无法根据下游决策任务自适应调整；此外，其循环神经网络轨迹编码器在离线数据轨迹长度有限时时序建模能力受制约，且计算开销较高。
 
-\xsubsection{引用其他内容}{Ref other floatings}
+针对上述理论与实践层面的空缺，本章提出一种基于自监督掩码重建的鲁棒离线强化学习方法（Masked Implicit Q-Learning，Masked-IQL）。该方法通过构建鲁棒掩码表征学习机制与两阶段解耦训练框架，在连续潜在空间中实现对未知掩码观测函数的零样本适应能力，有效缓解了训练-测试之间的可观测性落差所引发的策略退化问题。同时，算法融合了轻量历史窗口聚合与表征正则化设计，显著增强了编码器在高缺失率下的表征稳定性与跨缺失率泛化能力，从而在多种掩码部分可观测场景中实现鲁棒的离线策略学习，其主要贡献如下：
 
-其他浮动体引用请使用 \clist{\ref{label}} 命令，将引用其编号（无括号）：
+1）构建鲁棒掩码表征学习机制，增强编码器对维度缺失的适应能力：首先，引入可学习掩码标记（Learnable Mask Token）机制，类比 BERT\cite{devlin2019bert} 与 MAE\cite{he2022masked} 中的掩码标记设计，通过可学习的连续嵌入向量替代传统零值填充，并将掩码向量作为显式输入拼接至编码器，从根本上消除真实零值与缺失零值之间的歧义；其次，提出随机掩码比例采样策略与表征正则化机制（LayerNorm 与一致性损失），前者通过在训练时动态采样缺失率使编码器暴露于广泛的可观测性水平，后者通过显式约束残缺输入的表征向完整输入的表征对齐，在连续潜在空间中对抗缺失引起的分布偏移；此外，引入轻量历史窗口聚合模块，通过滑动窗口内多步观测的独立编码与 MLP 聚合映射实现时序信息的有效利用，以远低于 RNN 的计算开销处理持续缺失场景。
 
-\begin{texcode}[]{}
-  如图 \ref{subfig:icon} 所示 \\
-  如表 \ref{tab:methodcompare} 所示 \\
-  如算法 \ref{algorithm} 所示 \\
-  如源码 \ref{lst:a_label} 所示
-\end{texcode}
+2）提出两阶段解耦训练框架，保障表征学习与策略优化的稳定协同：首先，将训练过程解耦为表征学习阶段与策略优化阶段——第一阶段通过随机掩码与重建损失、一致性损失训练编码器学习鲁棒表征，第二阶段在完整状态编码上训练 IQL 决策模块，确保时序差分学习中当前状态与后继状态特征分布的一致性，避免掩码随机性经贝尔曼自举放大导致值函数估计发散；其次，通过梯度截断机制实现两阶段之间的单向信息流，使编码器参数仅由自监督重建信号驱动更新，从根本上消除高方差 TD 梯度对表征结构的干扰，在保持训练流程简洁的同时实现与 ORDER 三阶段串行范式相当乃至更优的鲁棒性。
 
-\xsection{参考文献}{References}
+\xsection{面向掩码观测的算法结构设计}{Algorithm Architecture for Masked Observations}
 
+\xsubsection{整体架构设计}{Overall Architecture Design}
 
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 参考文献的著录格式应符合国家标准GB/T 7714-2015《文后参考文献著录规则》。参考文献中每条项目应齐全。
-    \item 参考文献里面标点符号：英文文献用半角,中文文献用全角。
-  \end{enumerate}
-\end{tcolorbox}
+Masked-IQL 的整体架构由两个功能互补的核心模块构成：鲁棒掩码表征学习模块（Robust Masked Representation Learning Module）与离线隐式 Q 学习决策模块（Offline Implicit Q-Learning Decision Module），并辅以轻量历史窗口聚合模块实现时序信息的有效利用。三个模块通过两阶段解耦训练框架进行协同优化，整体运作机制如下。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 文后著录的参考文献务必实事求是。论文中引用过的文献必须著录，未引用的文献不得出现。应遵循学术道德规范，避免涉嫌抄袭、剽窃等学术不端行为。
-    \item 参考文献一般应是作者亲自考察过的对学位论文有参考价值的文献，除特殊情况外，一般不应间接引用。
-    \item 参考文献应有权威性，要注意引用最新的文献。
-    \item 参考文献的数量：
-    博士学位论文，一般应在80篇以上，其中，期刊文献60篇以上，国外文献30篇以上，均以近5年的文献为主。
-    硕士学位论文，一般应在30篇以上，其中，期刊文献不少于20篇，国外文献不少于10篇，均以近5年的文献为主。对于申请专业学位的学位论文，参考文献的数量可参照执行。
-  \end{enumerate}
-\end{tcolorbox}
+鲁棒掩码表征学习模块位于架构的底层，负责将经过随机掩码扰动的残缺状态映射至底层马尔可夫状态的低维流形表征。该模块包含可学习掩码标记、编码器-解码器重建网络以及表征正则化组件（LayerNorm 与一致性损失），通过自监督重建目标与一致性约束的联合优化，迫使编码器学习一种对维度缺失具有不变性的鲁棒表征。
 
-模板使用 biblatex 编译参考文献，默认采用顺序编码制，有多种引用参考文献的方式，请自行查阅 biblatex-gbt-7715-2015 宏包，即 \clist{texdoc biblatex-gbt-7714-2015}。
+轻量历史窗口聚合模块对编码器输出进行时序聚合。对于滑动窗口内的 $K$ 步观测，各步共享编码器独立编码后，通过多层感知机（MLP）聚合映射回与单步表征相同的维度，使决策模块能够利用近期历史信息辅助当前决策，同时避免 RNN 的递归计算开销。
 
-在导言区使用\clist{\addbibresource{path/to/.bib file}}添加参考文献数据库，默认参考文献数据库位于 ./References/ 下。
-
-这里主要举例三种引用方式，使用 \clist{\cite{ref}} 的引用结果作为上标出现在正文中，使用 \clist{\parencite{ref}} 的引用结果作为正文内容（一个名词）出现在正文中，使用 \clist{\footfullcite{ref}} 的引用结果作为脚注内容在脚注部分出现。
+离线隐式 Q 学习决策模块位于架构的上层，基于 IQL 算法框架实现策略评估与策略提取。与标准 IQL 以原始状态作为输入不同，Masked-IQL 中的价值网络 $V_\omega$、评论家网络 $Q_\theta$ 与演员网络 $\pi_\xi$ 均以经过梯度截断的鲁棒特征作为输入，在一个对维度缺失具有不变性的抽象特征空间中进行值函数估计与策略优化。
 
 
+两个训练阶段之间的信息流具有严格的功能分工：第一阶段（表征学习）通过随机掩码训练编码器的鲁棒映射能力，第二阶段（策略优化）在完整状态编码上训练 IQL 决策网络，确保时序差分学习中当前状态与后继状态的特征分布一致。测试时，当遇到真实维度缺失，编码器凭借第一阶段习得的鲁棒性将残缺输入映射到接近完整输入的表征空间，使第二阶段学到的策略依然适用。
 
-\begin{texcode}[]{}
-  这是一个比较常见的问题 \cite{barella_situ_2021}。可以发现 xxxx \cite{atta_enhanced_2021}。\\
+\xsubsection{表征学习模块}{Robust Masked Representation Learning Module}
 
-  文献\parencite{张燕2013电气自动化在电气工程中的应用探讨} 提出了 xxx，文献 \parencite{黄雪芳2012探讨电气工程中自动化技术的应用} 则提出了 yyy。
+鲁棒掩码表征学习模块是 Masked-IQL 的核心组件，负责从残缺状态中提取对维度缺失具有不变性的低维鲁棒表征。该模块包含四个技术子组件：显式掩码输入与可学习 Mask Token、随机掩码比例采样、编码器-解码器重建架构以及表征正则化机制。
 
-\end{texcode}
+显式掩码输入与可学习 Mask Token
 
-\footnote{这是脚注1}根据 zzz 发布的报告 \footfullcite{王磊2011电气自动化控制设备可靠性探究}，可以发现\footnote{这是脚注2}
+设离线数据集 $\mathcal{D} = \{(s_t, a_t, r_t, s_{t+1})\}_{t=1}^{N}$ 由行为策略 $\pi_\beta$ 预先收集而得，其中 $s_t \in \mathbb{R}^{d_s}$ 为 $d_s$ 维完整状态向量。为模拟测试阶段的部分可观测场景，引入二值掩码变量 $m_t \in \{0, 1\}^{d_s}$，其中 $m_t^{(i)} = 1$ 表示第 $i$ 个状态维度可观测，$m_t^{(i)} = 0$ 表示该维度被遮蔽。
+
+传统方法通常将缺失维度简单置零，即 $\tilde{s}_t = s_t \odot m_t$。然而，这一做法引入了一个根本性歧义：零值既可能表示"该维度的真实物理量为零"（如零速度），也可能表示"该维度缺失"。编码器无法区分这两种语义截然不同的情况，导致在高缺失率下表征严重退化。
+
+为消除上述歧义，Masked-IQL 引入可学习掩码标记 $e_{\text{mask}} \in \mathbb{R}^{d_s}$，作为网络参数的一部分进行端到端优化。残缺状态的构造方式修改为：
+\begin{equation}
+    \tilde{s}_t = s_t \odot m_t + e_{\text{mask}} \odot (1 - m_t)
+    \label{eq:mask_token}
+\end{equation}
+其中，可观测维度保留原始状态值，缺失维度由可学习掩码标记 $e_{\text{mask}}$ 的对应分量填充。$e_{\text{mask}}$ 在训练过程中通过重建损失与一致性损失的梯度信号自适应优化，学习到一种使编码器在面对缺失维度时仍能提取有效表征的最优填充模式。
+
+进一步地，为使编码器显式感知"哪些维度缺失"这一结构化信息，将掩码向量 $m_t$ 作为额外输入通道拼接至残缺状态，形成编码器的完整输入：
+\begin{equation}
+    x_t = [\tilde{s}_t;\, m_t] \in \mathbb{R}^{2d_s}
+    \label{eq:encoder_input}
+\end{equation}
+其中，$[\cdot;\,\cdot]$ 表示向量拼接操作。掩码向量 $m_t$ 的显式输入为编码器提供了关于观测可用性的元信息（Meta-information），使网络能够根据当前的缺失模式动态调整特征提取策略——例如，当某一维度被标记为缺失时，编码器可学会更多地依赖与该维度具有物理关联的其他可观测维度进行推断。
+
+这一设计理念直接借鉴了自然语言处理中 BERT\cite{devlin2019bert} 的 [MASK] 标记机制与计算机视觉中 MAE\cite{he2022masked} 的掩码标记设计：在 BERT 中，[MASK] 标记显式告知 Transformer "此位置的词汇缺失"，使模型能够利用上下文进行填充；在 MAE 中，可学习的掩码标记替代被遮蔽的图像块，使解码器能够重建完整图像。Masked-IQL 将这一机制推广至状态空间的维度级掩码，为编码器建立了对缺失模式的显式感知能力。
+
+随机掩码比例采样
+
+在标准掩码训练中，掩码概率 $p_{\text{mask}}$ 通常设置为固定值（如 $p = 0.3$），即每个状态维度以固定概率被遮蔽。然而，测试阶段实际的缺失率 $\rho$ 是未知且可变的——可能从低缺失（$\rho = 0.1$）到极高缺失（$\rho = 0.9$）。固定掩码比例导致编码器仅在单一缺失率下获得充分训练，与测试时变化的缺失率之间存在分布偏移，限制了跨缺失率的泛化能力。
+
+为解决这一问题，Masked-IQL 采用随机掩码比例采样策略。在每个训练批次中，掩码比例 $p$ 从均匀分布中动态采样：
+\begin{equation}
+    p \sim U(p_{\min},\, p_{\max})
+    \label{eq:mask_ratio_sampling}
+\end{equation}
+其中，$p_{\min}$ 与 $p_{\max}$ 为超参数，分别控制训练时掩码比例的下界与上界。随后，该批次中每个状态维度的掩码变量独立采样：
+\begin{equation}
+    m_t^{(i)} \sim \text{Bernoulli}(1 - p), \quad i = 1, 2, \ldots, d_s
+\end{equation}
+
+随机掩码比例采样的设计动机在于：让编码器在训练期间见到从低缺失到高缺失的各种缺失率，从而学习一种对缺失比例具有不变性的鲁棒表征映射。这一策略可视为在缺失率维度上的领域随机化（Domain Randomization），与 sim-to-real 迁移中通过随机化环境参数提升泛化能力的思路一脉相承。值得注意的是，当 $p_{\min} = p_{\max}$ 时，该策略退化为固定掩码比例的特例，为消融实验中分析随机采样的贡献提供了自然的对照基线。
+
+编码器-解码器重建架构
+
+编码器 $E_\phi: \mathbb{R}^{2d_s} \to \mathbb{R}^{d_z}$ 接收拼接输入 $x_t = [\tilde{s}_t;\, m_t]$，通过多层感知机将其映射至低维潜在表征空间：
+\begin{equation}
+    z_t = E_\phi(x_t) = \text{LayerNorm}\!\left(\sigma\!\left(W_L \cdots \sigma\!\left(W_2 \sigma\!\left(W_1 x_t + b_1\right) + b_2\right) \cdots + b_L\right)\right)
+\end{equation}
+其中，$\{W_l, b_l\}_{l=1}^{L}$ 为编码器各层的可学习参数，$\sigma(\cdot)$ 为 ReLU 激活函数，$z_t \in \mathbb{R}^{d_z}$ 为低维潜在表征。编码器最后一层施加层归一化（LayerNorm），其作用与动机将在表征正则化部分详细阐述。
+
+解码器 $D_\psi: \mathbb{R}^{d_z} \to \mathbb{R}^{d_s}$ 以潜在表征 $z_t$ 为输入，尝试恢复原始完整状态：
+\begin{equation}
+    \hat{s}_t = D_\psi(z_t) = W'_{L'} \cdots \sigma\!\left(W'_2 \sigma\!\left(W'_1 z_t + b'_1\right) + b'_2\right) \cdots + b'_{L'}
+\end{equation}
+其中，解码器最后一层不使用激活函数，以保证输出值域与原始状态空间一致。重建目标为最小化重建状态 $\hat{s}_t$ 与原始完整状态 $s_t$ 之间的均方误差：
+\begin{equation}
+    \mathcal{L}_{\text{recon}}(\phi, \psi) = \mathbb{E}_{(s_t, \cdot, \cdot, \cdot) \sim \mathcal{D},\, m_t}\!\left[\left\| D_\psi(E_\phi([\tilde{s}_t;\, m_t])) - s_t \right\|_2^2\right]
+    \label{eq:recon_loss}
+\end{equation}
+
+由于编码器的输入仅包含部分维度的真实信息（其余维度由可学习掩码标记填充），而重建目标要求恢复全部 $d_s$ 个维度的完整值，编码器必须学会利用可观测维度之间的统计关联来推断被遮蔽维度的值。在物理控制系统中，状态各维度之间通常存在由动力学方程所约束的强关联结构（如位置与速度之间的微分关系、不同关节角度之间的运动学耦合），重建损失的最小化过程恰恰迫使编码器挖掘并编码这些物理不变性约束。
+
+表征正则化：LayerNorm 与一致性损失
+
+在高缺失率下，编码器从严重残缺的输入中提取表征面临两个突出问题：其一，连续隐空间 $z$ 无约束时，缺失维度越多，表征的数值范围与方向越容易偏离训练数据的正常表征分布，飘至分布外（Out-of-Distribution, OOD）区域，导致下游 IQL 价值估计崩溃；其二，仅依赖重建损失进行隐式对齐效率较低，编码器可能在重建准确率可接受的前提下，对不同缺失模式产生差异显著的表征。
+
+为此，Masked-IQL 引入两项表征正则化机制：
+
+\textit{层归一化（LayerNorm）}。在编码器输出层之后施加 LayerNorm，将表征 $z_t$ 的各分量归一化为零均值、单位方差：
+\begin{equation}
+    \hat{z}_t^{(j)} = \frac{z_t^{(j)} - \mu_{z_t}}{\sqrt{\sigma_{z_t}^2 + \epsilon}}, \quad \mu_{z_t} = \frac{1}{d_z}\sum_{j=1}^{d_z} z_t^{(j)}, \quad \sigma_{z_t}^2 = \frac{1}{d_z}\sum_{j=1}^{d_z} (z_t^{(j)} - \mu_{z_t})^2
+\end{equation}
+LayerNorm 的关键作用在于将表征约束在一个紧凑的数值范围内，防止高缺失率下表征向量的模长与方向发生不可控的偏移，通过统计归一化在连续空间中提供隐式的正则化效果。
+
+\textit{一致性损失（Consistency Loss）}。LayerNorm 仅在单样本层面约束数值范围，无法保证残缺输入与完整输入的表征在语义上保持一致。为此，引入一致性损失显式约束两者的对齐：
+\begin{equation}
+    \mathcal{L}_{\text{consist}}(\phi) = \mathbb{E}_{s_t \sim \mathcal{D},\, m_t}\!\left[\left\| E_\phi([\tilde{s}_t;\, m_t]) - \text{sg}\!\left(E_\phi([s_t;\, \mathbf{1}])\right) \right\|_2^2\right]
+    \label{eq:consist_loss}
+\end{equation}
+其中，$\text{sg}(\cdot)$ 为停止梯度算子（Stop-Gradient Operator），$[s_t;\, \mathbf{1}]$ 表示完整状态与全 1 掩码向量的拼接（即无维度缺失的输入），$E_\phi([\tilde{s}_t;\, m_t])$ 为残缺输入的表征，$E_\phi([s_t;\, \mathbf{1}])$ 为完整输入的表征。
+
+一致性损失的核心思想是：残缺输入的表征应当尽可能靠近同一状态在完整输入下的表征。停止梯度算子作用于完整输入分支，意味着一致性约束仅驱动残缺输入分支的表征向完整输入分支靠拢，而不反向影响完整输入分支的表征。这一非对称设计确保了完整输入的表征作为稳定的"锚点"，引导残缺输入的表征在连续潜在空间中对抗缺失引起的分布偏移。
+
+鲁棒掩码表征学习模块的总训练损失为重建损失与一致性损失的加权组合：
+\begin{equation}
+    \mathcal{L}_{\text{repr}}(\phi, \psi) = \mathcal{L}_{\text{recon}}(\phi, \psi) + \alpha \cdot \mathcal{L}_{\text{consist}}(\phi)
+    \label{eq:repr_loss}
+\end{equation}
+其中，$\alpha > 0$ 为一致性损失的权重超参数，控制表征对齐约束的强度。
+
+\xsubsection{历史窗口聚合模块}{Lightweight History Window Aggregation Module}
+
+在掩码部分可观测场景中，单步观测可能因严重缺失而无法提供充分的决策信息。当某些状态维度持续缺失（即因子消减场景）时，智能体在单个时间步内完全无法获取这些维度的信息，必须借助历史观测进行推断。传统的循环神经网络（RNN）轨迹编码方法虽能聚合历史观测序列，但递归展开引入了显著的计算延迟与内存开销，且在离线数据集轨迹长度有限的条件下，其长程建模能力受到制约。
+
+为在保持计算效率的前提下引入时序信息，Masked-IQL 提出一种轻量历史窗口聚合机制。设窗口大小为 $K$，对于当前时间步 $t$，取最近 $K$ 步的观测序列 $\{x_{t-K+1}, x_{t-K+2}, \ldots, x_t\}$，其中 $x_\tau = [\tilde{s}_\tau;\, m_\tau]$ 为各步的编码器输入。窗口内各步共享同一编码器 $E_\phi$，独立编码后得到 $K$ 个表征向量：
+\begin{equation}
+    z_\tau = E_\phi(x_\tau), \quad \tau = t-K+1, \ldots, t
+\end{equation}
+
+随后，将 $K$ 个表征向量拼接后通过 MLP 聚合网络 $G_\varphi$ 映射回与单步表征相同的 $d_z$ 维：
+\begin{equation}
+    \bar{z}_t = G_\varphi\!\left(\text{CONCAT}(z_{t-K+1}, z_{t-K+2}, \ldots, z_t)\right), \quad \bar{z}_t \in \mathbb{R}^{d_z}
+    \label{eq:window_agg}
+\end{equation}
+其中，$G_\varphi: \mathbb{R}^{K \cdot d_z} \to \mathbb{R}^{d_z}$ 为两层 MLP 聚合网络，包含 ReLU 激活函数与 LayerNorm。
+
+该设计的核心优势在于轻量性：窗口内各步的编码完全独立且可并行化，无递归依赖，无需展开长序列，计算开销仅为 $K$ 倍单步编码加上一次 MLP 前向传播。相较于 RNN 沿时间轴顺序展开所需的 $O(T \cdot d_h^2)$ 计算复杂度（$T$ 为轨迹长度，$d_h$ 为隐状态维度），窗口聚合的计算复杂度仅为 $O(K \cdot d_z^2)$，其中 $K \ll T$，在保持时序信息利用的同时大幅降低了计算开销。
+
+当窗口大小 $K = 1$ 时，聚合模块退化为恒等映射 $\bar{z}_t = z_t$，即纯单步推理模式。在实验中，$K$ 的选择将通过消融实验确定最优值。对于轨迹起始处不满 $K$ 步的情况，采用零填充（Zero Padding）对缺失的历史步进行补齐。
+
+\xsubsection{两阶段解耦训练框架}{Two-Phase Decoupled Training Framework}
+\label{sec:two_phase}
+
+Masked-IQL 的训练框架采用两阶段解耦设计，这一设计决策源于对训练稳定性的深入分析。
+
+Phase 1：表征学习阶段
+
+第一阶段的目标是训练编码器 $E_\phi$ 与解码器 $D_\psi$ 学习鲁棒的状态表征。在该阶段，对数据集中的每条转移 $(s_t, a_t, r_t, s_{t+1})$，通过随机掩码比例采样生成掩码 $m_t$，构造残缺输入 $x_t = [\tilde{s}_t;\, m_t]$（式 \eqref{eq:mask_token}--\eqref{eq:encoder_input}），并对窗口内各步施加独立的随机掩码。表征学习通过最小化总表征损失 $\mathcal{L}_{\text{repr}}$（式 \eqref{eq:repr_loss}）进行优化，其中重建损失迫使编码器从残缺输入中提取完整状态信息，一致性损失约束残缺输入的表征向完整输入的表征对齐。第一阶段的训练流程如图 \ref{fig:phase1_training} 所示。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{c4/phase1_encoder训练图.png}
+    \caption{ 表征学习阶段训练流程。编码器 $E_\phi$ 与解码器 $D_\psi$ 通过随机掩码输入进行自监督重建训练，同时一致性损失约束残缺输入表征向完整输入表征对齐，梯度仅更新表征模块参数。}
+    \label{fig:phase1_training}
+\end{figure}
+
+Phase 2：策略优化阶段
+
+第二阶段的目标是基于编码器提供的表征训练 IQL 决策模块。这里存在一个关键的设计决策：IQL 的价值网络 $V_\omega$、评论家网络 $Q_\theta$ 与策略网络 $\pi_\xi$ 统一使用完整状态编码（无掩码）进行训练，即以 $z_t = E_\phi([s_t;\, \mathbf{1}])$ 而非残缺状态的编码 $E_\phi([\tilde{s}_t;\, m_t])$ 作为 IQL 各网络的输入。第二阶段的训练流程如图 \ref{fig:phase2_training} 所示。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{c4/phase2_iql训练图.png}
+    \caption{Phase 2 策略优化阶段训练流程。IQL 决策模块（$V_\omega$、$Q_\theta$、$\pi_\xi$）在编码器输出的完整状态表征上进行训练，梯度截断确保 TD 信号不回传至编码器，保障值函数估计的稳定收敛。}
+    \label{fig:phase2_training}
+\end{figure}
+
+这一设计决策的理论动机在于确保时序差分（TD）学习的稳定收敛。在 IQL 的评论家更新中，TD 目标为 $y_t = r_t + \gamma V_\omega(z'_t)$，其中 $z'_t$ 为后继状态的表征。若 IQL 在掩码编码上训练，则当前状态表征 $z_t = E_\phi([\tilde{s}_t;\, m_t])$ 与后继状态表征 $z'_t = E_\phi([\tilde{s}_{t+1};\, m_{t+1}])$ 由于各自掩码 $m_t$、$m_{t+1}$ 的独立采样而具有不同的噪声特性，两者的特征分布存在不一致性。这一分布不一致通过 Bellman 自举被持续放大，最终导致值函数估计的方差急剧攀升乃至发散。通过让 IQL 统一在完整状态编码上训练，当前状态与后继状态的特征分布完全一致，TD 学习能够稳定收敛。
+
+测试时的推理流程
+
+测试阶段，当智能体遇到真实的维度缺失时，编码器凭借 Phase 1 中通过大量随机掩码训练所习得的鲁棒性，将残缺输入映射到接近完整输入的表征空间——这正是一致性损失 $\mathcal{L}_{\text{consist}}$ 所优化的目标。由于映射后的表征落在 IQL 训练时所见的完整状态表征分布附近，Phase 2 学到的策略依然能够做出有效决策。
+
+\xsection{算法实现}{Algorithm Implementation}
+
+\xsubsection{表征学习阶段的优化目标}{Optimization Objectives for Representation Learning}
+
+表征学习阶段（Phase 1）的优化目标为总表征损失 $\mathcal{L}_{\text{repr}}$，包含重建损失与一致性损失两个分量。
+
+重建损失
+
+设当前批次采样的掩码比例为 $p \sim U(p_{\min}, p_{\max})$，对批次内每个状态 $s_t$，独立采样掩码 $m_t \sim \text{Bernoulli}(1-p)^{d_s}$，构造残缺状态 $\tilde{s}_t = s_t \odot m_t + e_{\text{mask}} \odot (1 - m_t)$，编码器输入 $x_t = [\tilde{s}_t;\, m_t]$。重建损失对整个批次 $\mathcal{B}$ 求均值：
+\begin{equation}
+    \mathcal{L}_{\text{recon}} = \frac{1}{|\mathcal{B}|}\sum_{(s_t, \cdot, \cdot, \cdot) \in \mathcal{B}} \left\| D_\psi(E_\phi([\tilde{s}_t;\, m_t])) - s_t \right\|_2^2
+\end{equation}
+
+一致性损失
+
+对同一批次中的每个状态 $s_t$，同时计算其在残缺输入与完整输入下的编码表征，并最小化两者的均方距离：
+\begin{equation}
+    \mathcal{L}_{\text{consist}} = \frac{1}{|\mathcal{B}|}\sum_{s_t \in \mathcal{B}} \left\| E_\phi([\tilde{s}_t;\, m_t]) - \text{sg}\!\left(E_\phi([s_t;\, \mathbf{1}])\right) \right\|_2^2
+\end{equation}
+其中，完整输入分支的梯度被停止梯度算子 $\text{sg}(\cdot)$ 截断。
+
+总表征损失与参数更新
+
+编码器 $E_\phi$、解码器 $D_\psi$ 以及可学习掩码标记 $e_{\text{mask}}$ 的参数通过最小化总表征损失进行联合更新：
+\begin{equation}
+    \phi, \psi, e_{\text{mask}} \leftarrow \phi, \psi, e_{\text{mask}} - \eta_r \nabla_{\phi, \psi, e_{\text{mask}}} \left(\mathcal{L}_{\text{recon}} + \alpha \cdot \mathcal{L}_{\text{consist}}\right)
+\end{equation}
+其中，$\eta_r$ 为表征学习的学习率，$\alpha$ 为一致性损失权重。
+
+\xsubsection{隐式离线策略评估}{Implicit Offline Policy Evaluation}
+
+策略优化阶段（Phase 2）建立在 Implicit Q-Learning（IQL）\cite{kostrikov2022offline}框架之上。IQL 的核心创新在于完全规避对分布外动作的 $Q$ 值查询，通过非对称期望回归与优势加权回归实现纯粹的数据集内策略优化。
+
+在 Masked-IQL 中，IQL 各网络以完整状态的编码表征 $z_t = E_\phi([s_t;\, \mathbf{1}])$ 作为输入，并经梯度截断处理：$z_t^{\text{d}} = \text{sg}(z_t)$。
+
+非对称期望回归状态价值估计
+
+状态价值网络 $V_\omega$ 通过期望回归训练为逼近 $Q$ 值分布的上分位数：
+\begin{equation}
+    \mathcal{L}_V(\omega) = \mathbb{E}_{(s, a) \sim \mathcal{D}}\!\left[L_2^\tau\!\left(Q_{\hat{\theta}}(z^{\text{d}}, a) - V_\omega(z^{\text{d}})\right)\right]
+    \label{eq:iql_value}
+\end{equation}
+其中，$Q_{\hat{\theta}}$ 为目标 $Q$ 网络，$L_2^\tau(u) = |\tau - \mathbb{I}(u < 0)| \cdot u^2$ 为非对称二次损失函数，$\tau \in (0.5, 1)$ 为期望值参数。当 $\tau > 0.5$ 时，该损失函数对正残差施加更大的惩罚权重，使 $V_\omega(z^{\text{d}})$ 趋向于逼近数据集支撑集上的最优值，等价于隐式执行策略改进步骤。
+
+评论家网络的时序差分更新
+
+\begin{algorithm}[htbp]
+    \SetAlgoLined
+    \KwData{离线数据集 $\mathcal{D}$，掩码比例范围 $[p_{\min}, p_{\max}]$，一致性损失权重 $\alpha$，历史窗口大小 $K$，期望值参数 $\tau$，逆温度参数 $\beta$，折扣因子 $\gamma$，目标网络软更新率 $\rho$}
+    初始化编码器 $E_\phi$，解码器 $D_\psi$，可学习掩码标记 $e_{\text{mask}}$，窗口聚合网络 $G_\varphi$，状态价值网络 $V_\omega$，$Q$ 网络 $Q_\theta$，目标 $Q$ 网络 $Q_{\hat{\theta}} \leftarrow Q_\theta$，策略网络 $\pi_\xi$\;
+    \For{$\text{iteration} = 1, 2, \ldots, T$}{
+        从 $\mathcal{D}$ 采样小批量 $\{(s_i, a_i, r_i, s'_i)\}_{i=1}^B$\;
+        \tcp{Phase 1：表征学习}
+        采样掩码比例 $p \sim U(p_{\min}, p_{\max})$\;
+        \For{批次中每个样本 $i$}{
+            采样掩码 $m_i \sim \text{Bernoulli}(1 - p)^{d_s}$\;
+            $\tilde{s}_i = s_i \odot m_i + e_{\text{mask}} \odot (1 - m_i)$\;
+            $x_i = [\tilde{s}_i;\, m_i]$，$x_i^{\text{full}} = [s_i;\, \mathbf{1}]$\;
+        }
+        $z_i^{\text{masked}} = E_\phi(x_i)$，$z_i^{\text{full}} = E_\phi(x_i^{\text{full}})$\;
+        $\hat{s}_i = D_\psi(z_i^{\text{masked}})$\;
+        $\mathcal{L}_{\text{recon}} = \frac{1}{B}\sum_i \|\hat{s}_i - s_i\|_2^2$\;
+        $\mathcal{L}_{\text{consist}} = \frac{1}{B}\sum_i \|z_i^{\text{masked}} - \text{sg}(z_i^{\text{full}})\|_2^2$\;
+        $\phi, \psi, e_{\text{mask}} \leftarrow \phi, \psi, e_{\text{mask}} - \eta_r \nabla (\mathcal{L}_{\text{recon}} + \alpha \cdot \mathcal{L}_{\text{consist}})$\;
+        \tcp{Phase 2：策略优化（使用完整状态编码）}
+        $z_i^{\text{d}} = \text{sg}(E_\phi([s_i;\, \mathbf{1}]))$，$z_{i}^{\prime\text{d}} = \text{sg}(E_\phi([s'_i;\, \mathbf{1}]))$\;
+        历史窗口聚合：$\bar{z}_i^{\text{d}} = G_\varphi(\text{CONCAT}(z_{i-K+1}^{\text{d}}, \ldots, z_i^{\text{d}}))$\;
+        $\omega \leftarrow \omega - \eta_v \nabla_\omega \frac{1}{B}\sum_i L_2^\tau(Q_{\hat{\theta}}(\bar{z}_i^{\text{d}}, a_i) - V_\omega(\bar{z}_i^{\text{d}}))$\;
+        $\theta \leftarrow \theta - \eta_q \nabla_\theta \frac{1}{B}\sum_i (r_i + \gamma V_\omega(\bar{z}_{i}^{\prime\text{d}}) - Q_\theta(\bar{z}_i^{\text{d}}, a_i))^2$\;
+        $\xi \leftarrow \xi - \eta_\pi \nabla_\xi \frac{1}{B}\sum_i \exp(\beta \cdot A_i) \log \pi_\xi(a_i | \bar{z}_i^{\text{d}})$\;
+        $\hat{\theta} \leftarrow (1-\rho)\hat{\theta} + \rho\theta$\;
+    }
+    \caption{Masked-IQL 训练算法}
+    \label{alg:masked_iql}
+\end{algorithm}
+
+$Q$ 网络通过单步时序差分目标训练，使用 $V_\omega$ 而非 $\max_a Q$ 避免 OOD 动作查询：
+\begin{equation}
+    \mathcal{L}_Q(\theta) = \mathbb{E}_{(s, a, r, s') \sim \mathcal{D}}\!\left[\left(r + \gamma V_\omega({z'}^{\text{d}}) - Q_\theta(z^{\text{d}}, a)\right)^2\right]
+    \label{eq:iql_critic}
+\end{equation}
+其中，${z'}^{\text{d}} = \text{sg}(E_\phi([s';\, \mathbf{1}]))$ 为后继状态的表征。Bellman 目标 $r + \gamma V_\omega({z'}^{\text{d}})$ 中不包含任何在 $s'$ 处对动作的最大化操作，从根本上消除了外推误差放大问题。
+
+优势加权回归策略提取
+
+策略 $\pi_\xi$ 通过优势加权回归（AWR）从数据集中提取：
+\begin{equation}
+    \mathcal{L}_\pi(\xi) = \mathbb{E}_{(s, a) \sim \mathcal{D}}\!\left[\exp\!\left(\beta \cdot (Q_{\hat{\theta}}(z^{\text{d}}, a) - V_\omega(z^{\text{d}}))\right) \cdot \log \pi_\xi(a \mid z^{\text{d}})\right]
+    \label{eq:iql_policy}
+\end{equation}
+其中，$\beta > 0$ 为逆温度参数，控制策略提取的贪婪程度。优势函数 $A(z^{\text{d}},a) = Q_{\hat{\theta}}(z^{\text{d}},a) - V_\omega(z^{\text{d}})$ 将数据集中各动作的价值优势转化为样本权重，使策略偏向高优势动作。
+
+\xsubsection{梯度解耦机制}{Gradient Decoupling Mechanism}
+\label{sec:gradient_decouple}
+
+Masked-IQL 面临的核心技术挑战在于：如何将表征学习模块与 IQL 决策模块进行有效的协同训练而不引发梯度冲突。
+
+若将表征损失 $\mathcal{L}_{\text{repr}}$ 与 IQL 各损失函数直接联合优化编码器参数 $\phi$，编码器将同时被两类统计特性截然不同的梯度驱动：来自重建与一致性损失的低方差梯度，以及来自 IQL 时序差分误差经链式法则回传的高方差梯度。TD 误差项 $\delta_t = r + \gamma V_\omega(z'_t) - Q_\theta(z_t, a_t)$ 的方差在训练早期极高，其通过链式法则回传至编码器的梯度将对表征学习所精心建立的流形结构造成灾难性干扰。
+
+为消除这一梯度冲突，Masked-IQL 在两个层面实施梯度截断：
+
+其一，IQL 各网络接收的表征输入经停止梯度处理：
+\begin{equation}
+    z_t^{\text{d}} = \text{sg}(E_\phi([s_t;\, \mathbf{1}]))
+\end{equation}
+确保 IQL 的 TD 梯度不回传至编码器。
+
+其二，一致性损失中完整输入分支经停止梯度处理（式 \eqref{eq:consist_loss}），确保一致性约束仅单向驱动残缺分支向完整分支对齐。
+
+由此，Masked-IQL 的完整优化目标分解为两条独立的梯度更新路径：
+
+路径一：表征学习（更新 $\phi$, $\psi$, $e_{\text{mask}}$, $\varphi$）
+\begin{equation}
+    \phi, \psi, e_{\text{mask}}, \varphi \leftarrow \phi, \psi, e_{\text{mask}}, \varphi - \eta_r \nabla_{\phi, \psi, e_{\text{mask}}, \varphi} \mathcal{L}_{\text{repr}}
+\end{equation}
+
+路径二：策略优化（更新 $\omega$, $\theta$, $\xi$）
+\begin{equation}
+    \begin{aligned}
+        \omega &\leftarrow \omega - \eta_v \nabla_\omega \mathcal{L}_V(\omega) \\
+        \theta &\leftarrow \theta - \eta_q \nabla_\theta \mathcal{L}_Q(\theta) \\
+        \xi &\leftarrow \xi - \eta_\pi \nabla_\xi \mathcal{L}_\pi(\xi)
+    \end{aligned}
+\end{equation}
+
+两条路径在每个训练步骤中同时执行，但梯度信号相互隔离，实现了严格的单向信息流。
+
+\xsection{实验与评估}{Experiments and Evaluation}
+
+本节在 D4RL 基准\cite{fu2020d4rl}上对 Masked-IQL 进行系统性评估，包括动态缺失（Dynamical Missing）与因子消减（Factor Reduction）两种掩码场景下的泛化性能对比、核心技术组件的消融实验以及表征空间的可视化分析。
+
+\xsubsection{实验设置}{Experimental Setup}
+
+评估环境与数据集
+
+实验采用 D4RL 基准\cite{fu2020d4rl}中三个 MuJoCo 连续控制环境：HalfCheetah、Hopper 与 Walker2d。对于每个环境，使用两种不同质量的离线数据集：medium（中等策略数据）与 medium-replay（中等策略的经验回放缓冲区），共计 6 个任务配置。各环境的状态维度与动作维度如表 \ref{tab:d4rl_envs} 所示。
+
+\begin{table}[htbp]
+    \centering
+    \caption{D4RL 评估环境描述}
+    \label{tab:d4rl_envs}
+    \begin{tabular}{lccc}
+        \hline
+        环境 & 状态维度 $d_s$ & 动作维度 & 任务描述 \\
+        \hline
+        HalfCheetah & 17 & 6 & 半猎豹前向奔跑 \\
+        Hopper      & 11 & 3 & 单腿跳跃前进 \\
+        Walker2d    & 17 & 6 & 双足步行前进 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+掩码场景定义
+
+遵循 ORDER\cite{gu2023order}的实验协议，定义两种掩码部分可观测场景：
+
+\begin{itemize}
+    \item 动态缺失场景（Dynamical Missing，$\mathcal{M}_1$）：在每个时间步 $t$，每个状态维度 $i$ 以概率 $\eta$ 被独立遮蔽，即 $m_t^{(i)} = 0$ with probability $\eta$。缺失维度在不同时间步之间动态变化。
+    \item 因子消减场景（Factor Reduction，$\mathcal{M}_2$）：给定一条轨迹，以概率 $\eta$ 选择某些状态维度在整条轨迹中持续缺失，即 $m_{0:T}^{(i)} = 0$ with probability $\eta$。这模拟了传感器持续故障的场景。
+\end{itemize}
+
+在两种场景下，测试时的缺失率 $\eta$ 从 $\{0\%, 5\%, 10\%, 15\%, 20\%, 25\%, 30\%\}$ 中取值，以 5\% 为间隔覆盖从无缺失到中等缺失的范围。两种掩码场景的直观对比如图 \ref{fig:mask_scenarios} 所示。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{c4/动态缺失与因子缺失场景示意图.png}
+    \caption{两种掩码部分可观测场景示意图。左：动态缺失场景（$\mathcal{M}_1$），各时间步的缺失维度独立随机变化；右：因子消减场景（$\mathcal{M}_2$），被选中的状态维度在整条轨迹中持续缺失。}
+    \label{fig:mask_scenarios}
+\end{figure}
+
+对比基线方法
+
+将 Masked-IQL 与以下四种方法进行对比：
+
+\begin{itemize}
+    \item IQL\_FZ：IQL 在完整状态上训练，测试时将缺失维度填零（Fill Zeros），作为最朴素的缺失处理基线。
+    \item RORL：鲁棒离线强化学习方法\cite{yang2022rorl}，通过保守平滑策略增强离线策略对状态扰动的鲁棒性。
+    \item DMBP：基于扩散模型的离线强化学习方法\cite{he2024diffusion}，利用扩散模型作为数据合成器与规划器，增强策略的泛化能力。
+    \item IQL\_ORDER：ORDER\cite{gu2023order}框架与 IQL 的结合，采用离散代理表征的三阶段训练范式，是当前掩码部分可观测离线强化学习的代表性方法。
+\end{itemize}
+
+超参数设置
+
+所有方法在全部任务上采用统一的 IQL 超参数配置。Masked-IQL 的特有超参数设置如表 \ref{tab:masked_iql_hyperparams} 所示。所有实验以 5 个不同随机种子运行，每个种子进行 10 次独立评估，报告 D4RL 归一化分数的均值与标准差。
+
+\begin{table}[htbp]
+    \centering
+    \caption{Masked-IQL 超参数设置}
+    \label{tab:masked_iql_hyperparams}
+    \begin{tabular}{lc}
+        \hline
+        超参数 & 设定值 \\
+        \hline
+        编码器隐层维度 & 256 \\
+        潜在表征维度 $d_z$ & 64 \\
+        解码器隐层维度 & 256 \\
+        编码器/解码器层数 & 3 \\
+        掩码比例下界 $p_{\min}$ & 0.0 \\
+        掩码比例上界 $p_{\max}$ & 0.3 \\
+        一致性损失权重 $\alpha$ & 1.0 \\
+        历史窗口大小 $K$ & 3 \\
+        表征学习率 $\eta_r$ & $3 \times 10^{-4}$ \\
+        IQL 学习率 & $3 \times 10^{-4}$ \\
+        期望值参数 $\tau$ & 0.7 \\
+        逆温度参数 $\beta$ & 3.0 \\
+        折扣因子 $\gamma$ & 0.99 \\
+        目标网络软更新率 $\rho$ & 0.005 \\
+        小批量大小 & 256 \\
+        训练迭代次数 & $10^6$ \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\xsubsection{动态缺失场景下性能评估}{Generalization under Dynamical Missing Scenarios}
+
+表 \ref{tab:dynamic_missing} 展示了各方法在动态缺失场景（$\mathcal{M}_1$）下，不同缺失率 $\eta$ 上的 D4RL 归一化分数。实验覆盖三个环境的 medium 与 medium-replay 两种数据集。
+
+\begin{table}[!htbp]
+    \centering
+    \caption{动态缺失场景（$\mathcal{M}_1$）下的 D4RL 归一化分数（粗体表示各设定下最优值）}
+    \label{tab:dynamic_missing}
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{lll|ccccccc}
+        \hline
+        环境 & 数据集 & 方法 & $\eta=0\%$ & $\eta=5\%$ & $\eta=10\%$ & $\eta=15\%$ & $\eta=20\%$ & $\eta=25\%$ & $\eta=30\%$ \\
+        \hline
+        \multirow{10}{*}{HalfCheetah}
+        & \multirow{5}{*}{medium}
+        & IQL\_FZ       & $44.38$ & $26.05$ & $20.14$ & $16.79$ & $15.40$ & $14.42$ & $14.41$ \\
+        & & RORL          & $45.32$ & $28.19$ & $22.61$ & $21.55$ & $22.39$ & $20.68$ & $20.85$ \\
+        & & DMBP          & $45.45$ & $35.23$ & $30.17$ & $28.49$ & $26.74$ & $27.25$ & $22.75$ \\
+        & & IQL\_ORDER    & $46.48$ & $\mathbf{46.75}$ & $\mathbf{45.38}$ & $\mathbf{44.71}$ & $\mathbf{43.74}$ & $\mathbf{43.74}$ & $\mathbf{42.81}$ \\
+        & & Masked-IQL    & $\mathbf{46.62}$ & $43.92$ & $42.50$ & $40.47$ & $39.56$ & $38.28$ & $38.12$ \\
+        \cline{2-10}
+        & \multirow{5}{*}{medium-replay}
+        & IQL\_FZ       & $41.50$ & $22.45$ & $21.58$ & $20.29$ & $19.12$ & $20.37$ & $19.90$ \\
+        & & RORL          & $\mathbf{45.00}$ & $41.53$ & $38.44$ & $35.74$ & $32.88$ & $30.27$ & $26.53$ \\
+        & & DMBP          & $\mathbf{45.45}$ & $\mathbf{44.23}$ & $\mathbf{43.17}$ & $38.49$ & $36.74$ & $33.25$ & $30.75$ \\
+        & & IQL\_ORDER    & $41.79$ & $38.26$ & $39.60$ & $\mathbf{40.12}$ & $\mathbf{40.09}$ & $36.80$ & $36.11$ \\
+        & & Masked-IQL    & $41.14$ & $41.49$ & $39.44$ & $38.41$ & $37.76$ & $\mathbf{37.13}$ & $\mathbf{36.28}$ \\
+        \hline
+        \multirow{10}{*}{Hopper}
+        & \multirow{5}{*}{medium}
+        & IQL\_FZ       & $62.85$ & $22.93$ & $21.54$ & $20.47$ & $19.64$ & $21.86$ & $20.31$ \\
+        & & RORL          & $63.08$ & $53.65$ & $41.65$ & $36.23$ & $33.76$ & $30.77$ & $30.07$ \\
+        & & DMBP          & $64.56$ & $58.00$ & $50.36$ & $48.46$ & $44.76$ & $38.29$ & $32.11$ \\
+        & & IQL\_ORDER    & $\mathbf{67.70}$ & $\mathbf{69.07}$ & $52.00$ & $\mathbf{62.92}$ & $53.95$ & $42.48$ & $40.97$ \\
+        & & Masked-IQL    & $66.42$ & $64.98$ & $\mathbf{60.38}$ & $59.69$ & $\mathbf{57.61}$ & $\mathbf{50.27}$ & $\mathbf{49.40}$ \\
+        \cline{2-10}
+        & \multirow{5}{*}{medium-replay}
+        & IQL\_FZ       & $62.87$ & $23.68$ & $21.59$ & $19.25$ & $21.07$ & $20.79$ & $18.86$ \\
+        & & RORL          & $63.27$ & $54.03$ & $41.67$ & $36.56$ & $34.16$ & $30.44$ & $30.15$ \\
+        & & DMBP          & $64.33$ & $56.09$ & $51.11$ & $47.35$ & $46.66$ & $36.52$ & $32.19$ \\
+        & & IQL\_ORDER    & $\mathbf{66.61}$ & $\mathbf{65.99}$ & $\mathbf{67.06}$ & $\mathbf{63.62}$ & $\mathbf{61.86}$ & $\mathbf{61.62}$ & $\mathbf{60.75}$ \\
+        & & Masked-IQL    & $64.94$ & $62.59$ & $59.35$ & $57.09$ & $54.39$ & $50.93$ & $48.50$ \\
+        \hline
+        \multirow{10}{*}{Walker2d}
+        & \multirow{5}{*}{medium}
+        & IQL\_FZ       & $42.58$ & $8.55$ & $8.14$ & $6.23$ & $9.00$ & $5.56$ & $5.71$ \\
+        & & RORL          & $\mathbf{64.97}$ & $32.09$ & $33.29$ & $24.02$ & $21.84$ & $19.13$ & $16.01$ \\
+        & & DMBP          & $64.53$ & $34.82$ & $32.55$ & $25.20$ & $26.99$ & $27.34$ & $26.84$ \\
+        & & IQL\_ORDER    & $63.97$ & $39.47$ & $34.31$ & $39.91$ & $38.34$ & $36.16$ & $\mathbf{38.05}$ \\
+        & & Masked-IQL    & $64.70$ & $\mathbf{60.66}$ & $\mathbf{44.91}$ & $\mathbf{42.45}$ & $\mathbf{38.71}$ & $\mathbf{37.30}$ & $37.95$ \\
+        \cline{2-10}
+        & \multirow{5}{*}{medium-replay}
+        & IQL\_FZ       & $7.86$ & $6.13$ & $8.70$ & $5.48$ & $5.71$ & $4.79$ & $4.78$ \\
+        & & RORL          & $63.27$ & $23.75$ & $21.83$ & $19.10$ & $16.00$ & $14.51$ & $15.40$ \\
+        & & DMBP          & $\mathbf{64.51}$ & $35.04$ & $30.09$ & $27.30$ & $26.80$ & $25.36$ & $22.01$ \\
+        & & IQL\_ORDER    & $63.94$ & $39.42$ & $38.54$ & $36.07$ & $37.61$ & $34.54$ & $\mathbf{36.88}$ \\
+        & & Masked-IQL    & $61.91$ & $\mathbf{45.48}$ & $\mathbf{40.47}$ & $\mathbf{39.35}$ & $\mathbf{37.72}$ & $\mathbf{35.77}$ & $33.79$ \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+实验结果表明以下规律性结论：
+
+IQL\_FZ 在引入缺失后性能发生灾难性退化。在所有环境中，IQL\_FZ 从 $\eta = 0\%$ 到 $\eta = 5\%$ 即出现断崖式性能下降，例如 Walker2d-medium 从 $42.58$ 骤降至 $8.55$，Hopper-medium 从 $62.85$ 降至 $22.93$。这一现象表明，零值填充策略完全无法应对即使是极低缺失率的场景，验证了设计专门缺失处理机制的必要性。
+
+Masked-IQL 在 Walker2d 环境中展现出显著优势。在 Walker2d-medium 数据集上，Masked-IQL 在 $\eta = 5\%$ 时取得 $60.66$ 的归一化分数，大幅领先于次优方法 IQL\_ORDER 的 $39.47$（提升 53.7\%）。在 $\eta = 10\%$--$25\%$ 的范围内，Masked-IQL 持续保持领先地位。Walker2d-medium-replay 数据集上呈现类似趋势，Masked-IQL 在 $\eta = 5\%$--$25\%$ 范围内均为最优。
+
+Masked-IQL 的性能退化曲线更为平滑。如图 \ref{fig:dynamic_missing_results} 所示，相较于 IQL\_ORDER 在不同缺失率下的波动性（例如 Hopper-medium 中 ORDER 在 $\eta = 10\%$ 时骤降至 $52.00$，但在 $\eta = 15\%$ 时回升至 $62.92$），Masked-IQL 呈现更为稳定的单调下降趋势。这一特性归因于随机掩码比例采样策略使编码器在训练时均匀暴露于各缺失率水平，从而获得更一致的跨缺失率泛化能力。
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{c4/dynamic_missing_results.png}
+    \caption{动态缺失场景（$\mathcal{M}_1$）下各方法在不同缺失率（$0\%$--$30\%$）上的性能对比。Masked-IQL 在 Walker2d 与 Hopper 环境中展现出更平滑的性能退化趋势，IQL\_FZ 在引入缺失后发生灾难性退化。}
+    \label{fig:dynamic_missing_results}
+\end{figure}
+
+IQL\_ORDER 在 HalfCheetah 与 Hopper-medium-replay 上表现突出。在 HalfCheetah-medium 数据集上，IQL\_ORDER 在 $\eta = 5\%$--$30\%$ 范围内均取得最优分数，其离散表征的量化机制对 HalfCheetah 较低的状态维度（$d_s = 17$）与相对简单的动力学结构具有良好适配性。在 Hopper-medium-replay 上，IQL\_ORDER 在全部缺失率下均为最优，显示出其在该数据分布下的强泛化能力。
+
+DMBP 与 RORL 展示了中间水平的鲁棒性。DMBP 凭借扩散模型的生成能力在部分环境中取得了优于 RORL 的表现，特别是在 HalfCheetah-medium-replay 的低缺失率下（$\eta = 0\%$--$10\%$）。RORL 的保守平滑策略在完整观测下表现良好，但面对维度缺失时鲁棒性不足，性能退化幅度介于 IQL\_FZ 与表征学习方法之间。各方法在不同缺失率下的性能变化趋势如图 \ref{fig:dynamic_missing_results} 所示。
+
+
+
+\xsubsection{因子消减场景下性能评估}{Generalization under Factor Reduction Scenarios}
+
+表 \ref{tab:factor_reduction} 展示了因子消减场景（$\mathcal{M}_2$）下的实验结果。
+
+\begin{table}[!htbp]
+    \centering
+    \caption{因子消减场景（$\mathcal{M}_2$）下的 D4RL 归一化分数（粗体表示各设定下最优值）}
+    \label{tab:factor_reduction}
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{lll|ccccccc}
+        \hline
+        环境 & 数据集 & 方法 & $\eta=0\%$ & $\eta=5\%$ & $\eta=10\%$ & $\eta=15\%$ & $\eta=20\%$ & $\eta=25\%$ & $\eta=30\%$ \\
+        \hline
+        \multirow{10}{*}{HalfCheetah}
+        & \multirow{5}{*}{medium}
+        & IQL\_FZ       & $\mathbf{44.38}$ & $21.05$ & $18.14$ & $16.79$ & $15.40$ & $14.42$ & $14.41$ \\
+        & & RORL          & $41.53$ & $29.98$ & $22.00$ & $20.91$ & $19.01$ & $18.99$ & $17.95$ \\
+        & & DMBP          & $42.28$ & $32.35$ & $28.83$ & $26.73$ & $22.28$ & $21.60$ & $22.55$ \\
+        & & IQL\_ORDER    & $43.69$ & $\mathbf{45.61}$ & $\mathbf{45.83}$ & $\mathbf{45.45}$ & $\mathbf{42.25}$ & $\mathbf{40.40}$ & $\mathbf{39.89}$ \\
+        & & Masked-IQL    & $42.87$ & $40.79$ & $40.21$ & $38.18$ & $37.21$ & $37.57$ & $36.28$ \\
+        \cline{2-10}
+        & \multirow{5}{*}{medium-replay}
+        & IQL\_FZ       & $41.50$ & $18.45$ & $15.58$ & $12.29$ & $13.12$ & $12.37$ & $11.90$ \\
+        & & RORL          & $40.53$ & $27.98$ & $22.25$ & $20.91$ & $19.01$ & $18.99$ & $16.95$ \\
+        & & DMBP          & $\mathbf{42.28}$ & $32.35$ & $28.83$ & $26.73$ & $22.28$ & $21.60$ & $19.55$ \\
+        & & IQL\_ORDER    & $40.96$ & $\mathbf{40.21}$ & $\mathbf{39.06}$ & $\mathbf{41.74}$ & $33.59$ & $\mathbf{31.62}$ & $\mathbf{31.31}$ \\
+        & & Masked-IQL    & $40.42$ & $38.80$ & $37.01$ & $36.49$ & $\mathbf{37.28}$ & $29.41$ & $30.56$ \\
+        \hline
+        \multirow{10}{*}{Hopper}
+        & \multirow{5}{*}{medium}
+        & IQL\_FZ       & $52.85$ & $12.93$ & $9.54$ & $8.47$ & $9.64$ & $7.86$ & $9.31$ \\
+        & & RORL          & $64.06$ & $24.08$ & $13.44$ & $17.96$ & $14.45$ & $15.13$ & $14.96$ \\
+        & & DMBP          & $66.96$ & $30.32$ & $24.55$ & $23.87$ & $22.41$ & $20.42$ & $19.29$ \\
+        & & IQL\_ORDER    & $72.47$ & $41.47$ & $27.99$ & $\mathbf{47.74}$ & $\mathbf{35.11}$ & $\mathbf{35.19}$ & $\mathbf{34.24}$ \\
+        & & Masked-IQL    & $\mathbf{73.37}$ & $\mathbf{60.23}$ & $\mathbf{50.23}$ & $44.40$ & $34.04$ & $30.58$ & $29.57$ \\
+        \cline{2-10}
+        & \multirow{5}{*}{medium-replay}
+        & IQL\_FZ       & $52.87$ & $13.68$ & $11.59$ & $9.25$ & $7.00$ & $8.79$ & $8.86$ \\
+        & & RORL          & $65.10$ & $26.40$ & $22.13$ & $21.96$ & $19.37$ & $19.44$ & $15.95$ \\
+        & & DMBP          & $66.25$ & $38.70$ & $28.45$ & $29.20$ & $24.40$ & $24.94$ & $20.34$ \\
+        & & IQL\_ORDER    & $\mathbf{78.93}$ & $57.40$ & $\mathbf{58.06}$ & $\mathbf{56.16}$ & $\mathbf{50.83}$ & $\mathbf{62.63}$ & $\mathbf{34.67}$ \\
+        & & Masked-IQL    & $77.23$ & $\mathbf{63.68}$ & $51.80$ & $42.79$ & $34.39$ & $30.12$ & $28.44$ \\
+        \hline
+        \multirow{10}{*}{Walker2d}
+        & \multirow{5}{*}{medium}
+        & IQL\_FZ       & $42.58$ & $9.55$ & $8.14$ & $6.23$ & $9.00$ & $5.56$ & $5.71$ \\
+        & & RORL          & $63.57$ & $32.20$ & $14.72$ & $17.23$ & $15.09$ & $15.40$ & $11.26$ \\
+        & & DMBP          & $66.43$ & $40.00$ & $26.02$ & $18.67$ & $16.46$ & $16.71$ & $11.72$ \\
+        & & IQL\_ORDER    & $\mathbf{71.43}$ & $\mathbf{69.99}$ & $32.70$ & $35.90$ & $34.29$ & $\mathbf{32.76}$ & $21.43$ \\
+        & & Masked-IQL    & $69.72$ & $55.79$ & $\mathbf{44.99}$ & $\mathbf{38.11}$ & $\mathbf{37.03}$ & $30.47$ & $\mathbf{31.25}$ \\
+        \cline{2-10}
+        & \multirow{5}{*}{medium-replay}
+        & IQL\_FZ       & $7.86$ & $6.13$ & $8.70$ & $5.48$ & $5.71$ & $4.79$ & $4.78$ \\
+        & & RORL          & $33.57$ & $\mathbf{32.20}$ & $17.72$ & $14.23$ & $14.09$ & $13.40$ & $11.26$ \\
+        & & DMBP          & $\mathbf{36.43}$ & $30.00$ & $26.02$ & $18.67$ & $16.46$ & $16.71$ & $12.72$ \\
+        & & IQL\_ORDER    & $33.20$ & $30.69$ & $28.96$ & $\mathbf{23.42}$ & $17.07$ & $\mathbf{28.21}$ & $\mathbf{28.62}$ \\
+        & & Masked-IQL    & $34.53$ & $31.46$ & $\mathbf{30.99}$ & $21.78$ & $\mathbf{22.92}$ & $20.36$ & $21.91$ \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+因子消减场景相较于动态缺失场景对所有方法构成了更为严峻的挑战。在因子消减中，某些状态维度在整条轨迹中持续缺失，智能体无法通过时间维度的信息互补来推断这些维度的值。实验结果揭示以下关键发现：
+
+Masked-IQL 在 Hopper-medium 的低缺失率下展现出显著优势。在 $\eta = 0\%$--$10\%$ 范围内，Masked-IQL 分别取得 $73.37$、$60.23$、$50.23$ 的归一化分数，大幅领先于 IQL\_ORDER 的 $72.47$、$41.47$、$27.99$。特别是在 $\eta = 5\%$ 时，Masked-IQL 以 $60.23$ 的分数超越 IQL\_ORDER 的 $41.47$ 达 45.3\%，表明其连续表征机制在因子消减初期能够更有效地利用剩余可观测维度间的结构关联。
+
+Masked-IQL 在 Walker2d-medium 中缺失率下持续领先。在 $\eta = 10\%$--$20\%$ 范围内，Masked-IQL 取得 $44.99$、$38.11$、$37.03$ 的最优分数，并在 $\eta = 30\%$ 时以 $31.25$ 大幅领先于 IQL\_ORDER 的 $21.43$（提升 45.8\%）。这归因于一致性损失使编码器在连续空间中保持了对持续缺失模式的稳定映射。
+
+IQL\_ORDER 在 HalfCheetah 环境与 Hopper-medium-replay 上表现突出。IQL\_ORDER 在 HalfCheetah 两种数据集的大部分缺失率下均为最优，且在 Hopper-medium-replay 上展现出强泛化能力。其离散量化表征对 HalfCheetah 的状态空间结构具有较好的适配性。然而，IQL\_ORDER 的性能波动较大（例如 Hopper-medium 中从 $\eta = 10\%$ 的 $27.99$ 跳升至 $\eta = 15\%$ 的 $47.74$），反映出离散量化在不同缺失模式下的不稳定性。
+
+因子消减场景下各方法的性能退化更为剧烈。如图 \ref{fig:factor_reduction_results} 所示，与动态缺失场景相比，所有方法在因子消减下的性能下降速度更快。IQL\_FZ 在因子消减中的退化尤为严重，例如 Hopper-medium 从 $\eta = 0\%$ 的 $52.85$ 降至 $\eta = 5\%$ 的 $12.93$（下降 75.5\%）。DMBP 与 RORL 同样面临较大的性能损失，但其退化程度介于 IQL\_FZ 与表征学习方法之间。各方法在因子消减场景下的性能变化趋势如图 \ref{fig:factor_reduction_results} 所示。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{c4/factor_reduction_results.png}
+    \caption{因子消减场景（$\mathcal{M}_2$）下各方法在不同缺失率（$0\%$--$30\%$）上的性能对比。因子消减场景对所有方法构成更严峻的挑战，各方法性能退化速度均快于动态缺失场景，Masked-IQL 在 Hopper 低缺失率与 Walker2d 中缺失率下保持领先。}
+    \label{fig:factor_reduction_results}
+\end{figure}
+
+\xsubsection{消融实验}{Ablation Study}
+
+为定量分析 Masked-IQL 中两个关键技术组件的贡献，本节在 Walker2d-medium 任务上以动态缺失场景（$\eta = 15\%$）为代表设定，开展消融实验；同时在 HalfCheetah-medium 任务上，针对动态缺失与因子消减两种场景，在全缺失率范围（$0\%$--$30\%$）内追踪各组件的贡献曲线，以更完整地刻画组件重要性随缺失程度变化的规律。两个消融变体定义如下：（1）去除可学习 Mask Token（w/o learn\_mask），退化为传统零值填充；（2）去除历史窗口聚合（w/o window），令 $K = 1$ 退化为纯单步推理。Walker2d-medium 上的实验结果如表 \ref{tab:ablation} 所示，HalfCheetah-medium 上跨缺失率的消融曲线如图 \ref{fig:ablation_results} 所示。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\textwidth]{c4/ablation_results.png}
+    \caption{HalfCheetah-medium 消融实验结果（D4RL 归一化分数，缺失率 $0\%$--$30\%$）。左：动态缺失场景，去除可学习 Mask Token（w/o learn\_mask）的性能退化最为显著，去除历史窗口聚合（w/o window）退化较小；右：因子消减场景，组件重要性发生逆转——去除历史窗口聚合的性能曲线急剧下滑（在 $30\%$ 缺失率下仅约 16 分），而完整 Masked-IQL 保持相对平稳，表明历史窗口在持续维度缺失下承担了关键的互补信息聚合作用。}
+    \label{fig:ablation_results}
+\end{figure}
+
+消融实验结果揭示了两个技术组件在不同缺失场景下呈现出截然不同的重要性模式：
+
+可学习 Mask Token 在动态缺失场景中贡献最为突出。在 Walker2d-medium 的表格结果中，退化为零值填充导致性能从 $42.45$ 降至 $36.12$，降幅 14.9\%。在 HalfCheetah-medium 的折线图（图 \ref{fig:ablation_results} 左）中可以看出，w/o learn\_mask 曲线在整个缺失率范围内始终处于最低位，且随缺失率升高与完整方法的差距持续扩大，在 $30\%$ 缺失率时下降至约 $32$ 分，而完整 Masked-IQL 仍维持约 $38$ 分。零值填充无法区分"真实零值"与"缺失标记"，导致编码器在高缺失率下发生特征语义混淆；可学习 Mask Token 通过引入独立的可训练嵌入表示缺失信息，从根本上消除了这一歧义，使编码器能够形成对缺失模式感知的鲁棒特征。
+
+历史窗口聚合在因子消减场景中的作用发生显著逆转，成为决定性组件。在动态缺失场景中（图 \ref{fig:ablation_results} 左），w/o window 曲线位于 w/o learn\_mask 之上，仅有温和退化，与 Walker2d 的结论一致。然而在因子消减场景中（图 \ref{fig:ablation_results} 右），w/o window 的性能曲线急剧崩塌，在 $30\%$ 缺失率下仅约 $16$ 分，远低于 w/o learn\_mask 的约 $30$ 分，而完整 Masked-IQL 仍维持约 $36$ 分。这一逆转揭示了两种场景在信息结构上的本质差异：动态缺失下每个时间步的掩码独立采样，单步内仍有大量维度可观测，历史窗口的边际收益有限；而因子消减场景下某些观测维度在整个轨迹中持续缺失，单步推理完全无法获取这些维度的信息，历史窗口聚合成为利用相邻时间步互补观测的唯一途径，一旦去除，模型对持续缺失维度的感知能力近乎丧失。
+
+综合两种场景的消融结果可以看出，两个技术组件在不同缺失场景下具有互补的重要性：可学习 Mask Token 重点解决动态随机缺失下的语义歧义问题，历史窗口聚合重点解决持续维度缺失下的互补信息聚合问题。完整 Masked-IQL 同时具备两项组件，因而能够在两种场景下均保持稳定的鲁棒性，这一设计的合理性得到了实验的有力支持。
+
+图 \ref{fig:tsne_consistency} 通过 t-SNE 可视化直观展示了可学习 Mask Token 与一致性损失协同作用对表征空间结构的影响：引入这两项机制后，残缺输入与完整输入的表征分布显著重合，验证了两者在对齐表征空间方面的有效性。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{c4/tsne_consistency_loss.png}
+    \caption{一致性损失对表征空间的影响（t-SNE 可视化）。左：未使用一致性损失时，残缺输入与完整输入的表征分布存在明显偏移；右：引入一致性损失后，两类表征在潜在空间中显著对齐。}
+    \label{fig:tsne_consistency}
+\end{figure}
+
+\xsection{本章小结}{Chapter Summary}
+
+本章针对离线强化学习在测试阶段面临的部分可观测性退化问题，提出了基于自监督掩码重建的鲁棒离线强化学习方法 Masked-IQL。
+
+在算法设计层面，Masked-IQL 通过多个相互衔接的技术组件构建了从"残缺观测"到"鲁棒决策"的完整信息处理路径。可学习掩码标记机制通过可学习连续嵌入替代零值填充，并将掩码向量作为显式输入，从根本上消除了真实零值与缺失零值之间的歧义。随机掩码比例采样策略通过在训练时动态采样缺失率，实现了对测试时未知缺失比例的跨域泛化。表征正则化机制——包括编码器输出的 LayerNorm 与残缺-完整表征间的一致性损失——在连续潜在空间中对抗高缺失率下的分布偏移。轻量历史窗口聚合模块以仅 $K$ 倍单步编码的计算开销实现了时序信息的有效利用，避免了 RNN 递归展开的高计算成本。两阶段解耦训练框架通过将掩码训练限定于表征学习阶段、在完整状态编码上训练 IQL 决策模块，确保了时序差分学习的稳定收敛。
+
+在实验评估层面，Masked-IQL 在 D4RL 基准的三个 MuJoCo 环境上，分别在动态缺失与因子消减两种掩码场景下，以 $0\%$--$30\%$ 的缺失率范围进行了系统性评估。实验结果表明，Masked-IQL 在多数环境与缺失率设定下取得了最优或极具竞争力的泛化性能，特别是在 Walker2d 与 Hopper 环境中展现出显著优势，且性能退化曲线相较于对比方法更为平滑稳定。消融实验在 Walker2d-medium 与 HalfCheetah-medium 两个环境上定量验证了可学习 Mask Token 与历史窗口聚合两个核心组件的贡献：可学习 Mask Token 通过消除零值歧义提供了约 14.9\% 的一致性性能增益，历史窗口聚合在动态缺失场景中贡献约 5.3\% 的稳定提升，且两组件的贡献规律在跨环境设定下具有良好的一致性。

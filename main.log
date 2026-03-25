@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.3.7)  12 MAR 2026 01:02
+This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.3.7)  25 MAR 2026 20:47
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -2130,13 +2130,538 @@ Package biblatex Info: ... file 'main.bbl' found.
  (./main.bbl
 
 Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'barella_situ_2021':
-(biblatex)                - Datamodel: article entry 'barella_situ_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+(biblatex)                with 'zheng2022application':
+(biblatex)                - Datamodel: article entry 'zheng2022application' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
 
 
 Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'barella_situ_2021':
-(biblatex)                - Datamodel: article entry 'barella_situ_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+(biblatex)                with 'zheng2022application':
+(biblatex)                - Datamodel: article entry 'zheng2022application' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'gao2004survey':
+(biblatex)                - Datamodel: article entry 'gao2004survey' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'gao2004survey':
+(biblatex)                - Datamodel: article entry 'gao2004survey' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'lecun2015deep':
+(biblatex)                - Datamodel: article entry 'lecun2015deep' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'lecun2015deep':
+(biblatex)                - Datamodel: article entry 'lecun2015deep' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'lecun2015deep':
+(biblatex)                - Datamodel: article entry 'lecun2015deep' (References/reference.bib): Invalid field 'publisher' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'schulman2017proximal':
+(biblatex)                - Datamodel: article entry 'schulman2017proximal' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'schulman2017proximal':
+(biblatex)                - Datamodel: article entry 'schulman2017proximal' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'zhang2018study':
+(biblatex)                - Datamodel: inproceedings entry 'zhang2018study' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'zhang2018study':
+(biblatex)                - Datamodel: inproceedings entry 'zhang2018study' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kaelbling1998planning':
+(biblatex)                - Datamodel: article entry 'kaelbling1998planning' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kaelbling1998planning':
+(biblatex)                - Datamodel: article entry 'kaelbling1998planning' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kaelbling1998planning':
+(biblatex)                - Datamodel: article entry 'kaelbling1998planning' (References/reference.bib): Invalid field 'publisher' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kumar2020implicit':
+(biblatex)                - Datamodel: inproceedings entry 'kumar2020implicit' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kumar2020implicit':
+(biblatex)                - Datamodel: inproceedings entry 'kumar2020implicit' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'chen2021decision':
+(biblatex)                - Datamodel: inproceedings entry 'chen2021decision' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'chen2021decision':
+(biblatex)                - Datamodel: inproceedings entry 'chen2021decision' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'laskin2020reinforcement':
+(biblatex)                - Datamodel: inproceedings entry 'laskin2020reinforcement' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'laskin2020reinforcement':
+(biblatex)                - Datamodel: inproceedings entry 'laskin2020reinforcement' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kostrikov2020image':
+(biblatex)                - Datamodel: inproceedings entry 'kostrikov2020image' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kostrikov2020image':
+(biblatex)                - Datamodel: inproceedings entry 'kostrikov2020image' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yarats2021mastering':
+(biblatex)                - Datamodel: inproceedings entry 'yarats2021mastering' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yarats2021mastering':
+(biblatex)                - Datamodel: inproceedings entry 'yarats2021mastering' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'srinivas2020curl':
+(biblatex)                - Datamodel: inproceedings entry 'srinivas2020curl' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'srinivas2020curl':
+(biblatex)                - Datamodel: inproceedings entry 'srinivas2020curl' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'hansen2021stabilizing':
+(biblatex)                - Datamodel: inproceedings entry 'hansen2021stabilizing' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'hansen2021stabilizing':
+(biblatex)                - Datamodel: inproceedings entry 'hansen2021stabilizing' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'lee2019network':
+(biblatex)                - Datamodel: inproceedings entry 'lee2019network' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'lee2019network':
+(biblatex)                - Datamodel: inproceedings entry 'lee2019network' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'hansen2021generalization':
+(biblatex)                - Datamodel: inproceedings entry 'hansen2021generalization' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'hansen2021generalization':
+(biblatex)                - Datamodel: inproceedings entry 'hansen2021generalization' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'bertoin2022look':
+(biblatex)                - Datamodel: article entry 'bertoin2022look' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'bertoin2022look':
+(biblatex)                - Datamodel: article entry 'bertoin2022look' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yuan2022tlda':
+(biblatex)                - Datamodel: inproceedings entry 'yuan2022tlda' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yuan2022tlda':
+(biblatex)                - Datamodel: inproceedings entry 'yuan2022tlda' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'liu2023cg2a':
+(biblatex)                - Datamodel: inproceedings entry 'liu2023cg2a' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'liu2023cg2a':
+(biblatex)                - Datamodel: inproceedings entry 'liu2023cg2a' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kumar2019stabilizing':
+(biblatex)                - Datamodel: inproceedings entry 'kumar2019stabilizing' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kumar2019stabilizing':
+(biblatex)                - Datamodel: inproceedings entry 'kumar2019stabilizing' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kumar2020conservative':
+(biblatex)                - Datamodel: inproceedings entry 'kumar2020conservative' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kumar2020conservative':
+(biblatex)                - Datamodel: inproceedings entry 'kumar2020conservative' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'fujimoto2019off':
+(biblatex)                - Datamodel: inproceedings entry 'fujimoto2019off' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'fujimoto2019off':
+(biblatex)                - Datamodel: inproceedings entry 'fujimoto2019off' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kostrikov2022offline':
+(biblatex)                - Datamodel: inproceedings entry 'kostrikov2022offline' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kostrikov2022offline':
+(biblatex)                - Datamodel: inproceedings entry 'kostrikov2022offline' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yang2022rorl':
+(biblatex)                - Datamodel: inproceedings entry 'yang2022rorl' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yang2022rorl':
+(biblatex)                - Datamodel: inproceedings entry 'yang2022rorl' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yang2024dmbp':
+(biblatex)                - Datamodel: inproceedings entry 'yang2024dmbp' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yang2024dmbp':
+(biblatex)                - Datamodel: inproceedings entry 'yang2024dmbp' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'gu2023order':
+(biblatex)                - Datamodel: inproceedings entry 'gu2023order' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'gu2023order':
+(biblatex)                - Datamodel: inproceedings entry 'gu2023order' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'he2022masked':
+(biblatex)                - Datamodel: inproceedings entry 'he2022masked' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'he2022masked':
+(biblatex)                - Datamodel: inproceedings entry 'he2022masked' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'seo2022masked':
+(biblatex)                - Datamodel: inproceedings entry 'seo2022masked' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'seo2022masked':
+(biblatex)                - Datamodel: inproceedings entry 'seo2022masked' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'liu2022mask':
+(biblatex)                - Datamodel: inproceedings entry 'liu2022mask' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'liu2022mask':
+(biblatex)                - Datamodel: inproceedings entry 'liu2022mask' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'wu2023masked':
+(biblatex)                - Datamodel: inproceedings entry 'wu2023masked' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'wu2023masked':
+(biblatex)                - Datamodel: inproceedings entry 'wu2023masked' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'liu2022maskdp':
+(biblatex)                - Datamodel: inproceedings entry 'liu2022maskdp' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'liu2022maskdp':
+(biblatex)                - Datamodel: inproceedings entry 'liu2022maskdp' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'liu2018survey':
+(biblatex)                - Datamodel: article entry 'liu2018survey' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'liu2018survey':
+(biblatex)                - Datamodel: article entry 'liu2018survey' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yin2016survey':
+(biblatex)                - Datamodel: article entry 'yin2016survey' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'yin2016survey':
+(biblatex)                - Datamodel: article entry 'yin2016survey' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'mnih2015human':
+(biblatex)                - Datamodel: article entry 'mnih2015human' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'mnih2015human':
+(biblatex)                - Datamodel: article entry 'mnih2015human' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'mnih2015human':
+(biblatex)                - Datamodel: article entry 'mnih2015human' (References/reference.bib): Invalid field 'publisher' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'lillicrap2015continuous':
+(biblatex)                - Datamodel: inproceedings entry 'lillicrap2015continuous' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'lillicrap2015continuous':
+(biblatex)                - Datamodel: inproceedings entry 'lillicrap2015continuous' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'fujimoto2018addressing':
+(biblatex)                - Datamodel: inproceedings entry 'fujimoto2018addressing' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'fujimoto2018addressing':
+(biblatex)                - Datamodel: inproceedings entry 'fujimoto2018addressing' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'haarnoja2018soft':
+(biblatex)                - Datamodel: inproceedings entry 'haarnoja2018soft' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'haarnoja2018soft':
+(biblatex)                - Datamodel: inproceedings entry 'haarnoja2018soft' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'zhan2022survey':
+(biblatex)                - Datamodel: article entry 'zhan2022survey' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'zhan2022survey':
+(biblatex)                - Datamodel: article entry 'zhan2022survey' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'li2022offlinesurvey':
+(biblatex)                - Datamodel: article entry 'li2022offlinesurvey' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'li2022offlinesurvey':
+(biblatex)                - Datamodel: article entry 'li2022offlinesurvey' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kostrikov2021offline':
+(biblatex)                - Datamodel: article entry 'kostrikov2021offline' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'kostrikov2021offline':
+(biblatex)                - Datamodel: article entry 'kostrikov2021offline' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'peng2019advantage':
+(biblatex)                - Datamodel: article entry 'peng2019advantage' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'peng2019advantage':
+(biblatex)                - Datamodel: article entry 'peng2019advantage' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'bengio2013representation':
+(biblatex)                - Datamodel: article entry 'bengio2013representation' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'bengio2013representation':
+(biblatex)                - Datamodel: article entry 'bengio2013representation' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'he2016deep':
+(biblatex)                - Datamodel: inproceedings entry 'he2016deep' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'he2016deep':
+(biblatex)                - Datamodel: inproceedings entry 'he2016deep' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'vaswani2017attention':
+(biblatex)                - Datamodel: inproceedings entry 'vaswani2017attention' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'vaswani2017attention':
+(biblatex)                - Datamodel: inproceedings entry 'vaswani2017attention' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'almuzairee2024recipe':
+(biblatex)                - Datamodel: article entry 'almuzairee2024recipe' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'almuzairee2024recipe':
+(biblatex)                - Datamodel: article entry 'almuzairee2024recipe' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'tassa2018deepmind':
+(biblatex)                - Datamodel: article entry 'tassa2018deepmind' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'tassa2018deepmind':
+(biblatex)                - Datamodel: article entry 'tassa2018deepmind' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'levine2020offline':
+(biblatex)                - Datamodel: article entry 'levine2020offline' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'levine2020offline':
+(biblatex)                - Datamodel: article entry 'levine2020offline' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'hausknecht2015deep':
+(biblatex)                - Datamodel: inproceedings entry 'hausknecht2015deep' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'hausknecht2015deep':
+(biblatex)                - Datamodel: inproceedings entry 'hausknecht2015deep' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'van2017neural':
+(biblatex)                - Datamodel: inproceedings entry 'van2017neural' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'van2017neural':
+(biblatex)                - Datamodel: inproceedings entry 'van2017neural' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'devlin2019bert':
+(biblatex)                - Datamodel: inproceedings entry 'devlin2019bert' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'devlin2019bert':
+(biblatex)                - Datamodel: inproceedings entry 'devlin2019bert' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'fu2020d4rl':
+(biblatex)                - Datamodel: article entry 'fu2020d4rl' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'fu2020d4rl':
+(biblatex)                - Datamodel: article entry 'fu2020d4rl' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'he2024diffusion':
+(biblatex)                - Datamodel: inproceedings entry 'he2024diffusion' (References/reference.bib): Invalid field 'languageid' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'he2024diffusion':
+(biblatex)                - Datamodel: inproceedings entry 'he2024diffusion' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'inproceedings'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'tishby2000information':
+(biblatex)                - Datamodel: article entry 'tishby2000information' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
+
+
+Package biblatex Warning: Biber reported the following issues
+(biblatex)                with 'tishby2000information':
+(biblatex)                - Datamodel: article entry 'tishby2000information' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
 
 
 Package biblatex Warning: Biber reported the following issues
@@ -2147,126 +2672,6 @@ Package biblatex Warning: Biber reported the following issues
 Package biblatex Warning: Biber reported the following issues
 (biblatex)                with 'atta_enhanced_2021':
 (biblatex)                - Datamodel: article entry 'atta_enhanced_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '张燕2013电气自动化在电气工程中的应用探讨':
-(biblatex)                - Datamodel: article entry '张燕2013电气自动化在电气工程中的应用探讨' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '张燕2013电气自动化在电气工程中的应用探讨':
-(biblatex)                - Datamodel: article entry '张燕2013电气自动化在电气工程中的应用探讨' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '黄雪芳2012探讨电气工程中自动化技术的应用':
-(biblatex)                - Datamodel: thesis entry '黄雪芳2012探讨电气工程中自动化技术的应用' (References/reference.bib): Field 'address' invalid in data model - ignoring.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '王磊2011电气自动化控制设备可靠性探究':
-(biblatex)                - Datamodel: article entry '王磊2011电气自动化控制设备可靠性探究' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '王磊2011电气自动化控制设备可靠性探究':
-(biblatex)                - Datamodel: article entry '王磊2011电气自动化控制设备可靠性探究' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '王永华2013现代电气控制及':
-(biblatex)                - Datamodel: book entry '王永华2013现代电气控制及' (References/reference.bib): Field 'address' invalid in data model - ignoring.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '王永华2013现代电气控制及':
-(biblatex)                - Datamodel: book entry '王永华2013现代电气控制及' (References/reference.bib): Invalid field 'languageid' for entrytype 'book'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '王永华2013现代电气控制及':
-(biblatex)                - Datamodel: book entry '王永华2013现代电气控制及' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'book'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '刘海龙2010浅谈电气自动化的现状与发展方向':
-(biblatex)                - Datamodel: article entry '刘海龙2010浅谈电气自动化的现状与发展方向' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '刘海龙2010浅谈电气自动化的现状与发展方向':
-(biblatex)                - Datamodel: article entry '刘海龙2010浅谈电气自动化的现状与发展方向' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '陈众励2007建筑电气节能技术综述':
-(biblatex)                - Datamodel: article entry '陈众励2007建筑电气节能技术综述' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with '陈众励2007建筑电气节能技术综述':
-(biblatex)                - Datamodel: article entry '陈众励2007建筑电气节能技术综述' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'sachdeva_effect_2021':
-(biblatex)                - Datamodel: article entry 'sachdeva_effect_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'sachdeva_effect_2021':
-(biblatex)                - Datamodel: article entry 'sachdeva_effect_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'wu_doublely-doped_2021':
-(biblatex)                - Datamodel: article entry 'wu_doublely-doped_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'wu_doublely-doped_2021':
-(biblatex)                - Datamodel: article entry 'wu_doublely-doped_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'luo_superhydrophobic_2021':
-(biblatex)                - Datamodel: article entry 'luo_superhydrophobic_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'luo_superhydrophobic_2021':
-(biblatex)                - Datamodel: article entry 'luo_superhydrophobic_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'hu_encapsulation_2021':
-(biblatex)                - Datamodel: article entry 'hu_encapsulation_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'hu_encapsulation_2021':
-(biblatex)                - Datamodel: article entry 'hu_encapsulation_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'qian_facile_2021':
-(biblatex)                - Datamodel: article entry 'qian_facile_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'qian_facile_2021':
-(biblatex)                - Datamodel: article entry 'qian_facile_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'evans_cooperative_2021':
-(biblatex)                - Datamodel: article entry 'evans_cooperative_2021' (References/reference.bib): Invalid field 'languageid' for entrytype 'article'.
-
-
-Package biblatex Warning: Biber reported the following issues
-(biblatex)                with 'evans_cooperative_2021':
-(biblatex)                - Datamodel: article entry 'evans_cooperative_2021' (References/reference.bib): Invalid field 'lansortorder' for entrytype 'article'.
 
 )
 Package biblatex Info: Reference section=0 on input line 140.
@@ -2327,9 +2732,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <8> on input line 147.
  [5] [6
 
-] (./Main_Miscellaneous/abstract_chs.tex [1
-
-]
+] (./Main_Miscellaneous/abstract_chs.tex
 Overfull \hbox (2.0pt too wide) in paragraph at lines 11--11
 [][] [] 
  []
@@ -2349,46 +2752,34 @@ Underfull \hbox (badness 10000) in paragraph at lines 15--16
 
  []
 
-[2]) (./Main_Miscellaneous/abstract_eng.tex
+[1
+
+]) [2
+
+
+] (./Main_Miscellaneous/abstract_eng.tex [3
+
+]
+Overfull \hbox (2.0pt too wide) in paragraph at lines 14--14
+[][] [] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 14--15
+
+ []
+
+
+Overfull \hbox (2.0pt too wide) in paragraph at lines 16--16
+[][] [] 
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 16--17
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 18--20
-
- []
-
-
-Overfull \hbox (2.0pt too wide) in paragraph at lines 27--27
-[][] [] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 27--28
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 29--30
-
- []
-
-
-Overfull \hbox (2.0pt too wide) in paragraph at lines 31--31
-[][] [] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 31--32
-
- []
-
-[3
-
-
-
-]) [4] (./main.toc
+) [4] (./main.toc
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <12> on input line 1.
 LaTeX Font Info:    External font `lmex10' loaded for size
@@ -2407,62 +2798,49 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 \tf@toe=\write10
 \openout10 = `main.toe'.
 
- [8] (./main.gls) [9
-
-
-
-] [10
-
-] (./Main_Spine/c1.tex
+ [8] (./Main_Spine/c1.tex
 Chapter 1.
 [1
 
-] [2] [3] [4]) (./Main_Spine/c2.tex [5]
+
+] [2] [3] [4]
+
+LaTeX Warning: Reference `fig:framework' on page 5 undefined on input line 98.
+
+[5]) (./Main_Spine/c2.tex [6]
 Chapter 2.
+[7
 
-Overfull \hbox (7.46677pt too wide) in paragraph at lines 13--15
-[]\TU/SimSun(1)/m/n/12 强 化 学 习 问 题 的 标 准 数 学 抽 象 为 马 尔 可 夫 决 策 过 程  |（\TU/TimesNewRoman(0)/m/n/12 Markov Decision Process, MDP\TU/SimSun(1)/m/n/12 ） 。|
- []
-
-[6
-
-] [7] [8]
+]
+File: ./Figures/c2/马尔可夫决策过程.jpg Graphic file (type bmp)
+<./Figures/c2/马尔可夫决策过程.jpg>
+ [8] [9]
 LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <12> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 114.
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 76.
 LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <8> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 114.
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 76.
 LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <6> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 114.
- [9] [10]
-
-LaTeX Warning: Citation 'haarnoja2018soft' on page 11 undefined on input line 164.
-
-
-Overfull \hbox (7.37613pt too wide) in paragraph at lines 164--165
-[]\TU/TimesNewRoman(0)/m/n/12 Soft Actor-Critic |\TU/SimSun(1)/m/n/12 （\TU/TimesNewRoman(0)/m/n/12 SAC\TU/SimSun(1)/m/n/12 ）|  算 法$[]$将 最 大 熵 强 化 学 习 框 架 与 离 策 略  |（\TU/TimesNewRoman(0)/m/n/12 Off-Policy\TU/SimSun(1)/m/n/12 ）|
- []
-
-[11] [12] [13]
-
-LaTeX Warning: Citation 'kostrikov2021offline' on page 14 undefined on input line 263.
-
-[14] [15]
-
-LaTeX Warning: Citation 'peng2019advantage' on page 16 undefined on input line 312.
-
-[16] [17]
-
-LaTeX Warning: Citation 'laskin2020reinforcement' on page 18 undefined on input line 353.
-
-
-LaTeX Warning: Citation 'kostrikov2020image' on page 18 undefined on input line 353.
-
-[18]
-
-LaTeX Warning: Citation 'he2022masked' on page 19 undefined on input line 395.
-
-[19] [20]) (./Main_Spine/c3.tex [21]
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 76.
+File: ./Figures/c2/sac.png Graphic file (type bmp)
+<./Figures/c2/sac.png>
+ [10]
+File: ./Figures/c2/offrl.png Graphic file (type bmp)
+<./Figures/c2/offrl.png>
+ [11] [12] [13]
+File: ./Figures/c2/mae.png Graphic file (type bmp)
+<./Figures/c2/mae.png>
+ [14]) (./Main_Spine/c3.tex [15] [16]
 Chapter 3.
+[17
+
+]
+File: ./Figures/c3/FIG1.jpg Graphic file (type bmp)
+<./Figures/c3/FIG1.jpg>
+ [18] [19] [20] [21]
+
+LaTeX Warning: Citation 'pinto2017asymmetric' on page 22 undefined on input line 121.
+
+[22] [23] [24]
 
 Package fontspec Info: 
 (fontspec)             Could not resolve font "FangSong/BI" (it probably
@@ -2489,38 +2867,113 @@ Package fontspec Info:
 (fontspec)             - 'normal' (m/n) with NFSS spec.:
 (fontspec)             <->"FangSong/OT:script=hani;language=dflt;"
 
-\g__tcobox_out_iow=\write11
-\openout11 = `main.listing'.
+ [25]
+LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <10.5> not available
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 255.
+LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <7.34996> not available
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 255.
+LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <5.25> not available
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 255.
+ [26]
+File: ./Figures/c3/FIG2.jpg Graphic file (type bmp)
+<./Figures/c3/FIG2.jpg>
+ [27] [28]
+File: ./Figures/c3/FIG3.jpg Graphic file (type bmp)
+<./Figures/c3/FIG3.jpg>
+File: ./Figures/c3/FIG4.jpg Graphic file (type bmp)
+<./Figures/c3/FIG4.jpg>
+ [29] [30]
+File: ./Figures/c3/FIG5.jpg Graphic file (type bmp)
+<./Figures/c3/FIG5.jpg>
+ [31] [32]
+File: ./Figures/c3/FIG6.jpg Graphic file (type bmp)
+<./Figures/c3/FIG6.jpg>
+File: ./Figures/c3/FIG7.jpg Graphic file (type bmp)
+<./Figures/c3/FIG7.jpg>
+ [33]
+File: ./Figures/c3/FIG8.jpg Graphic file (type bmp)
+<./Figures/c3/FIG8.jpg>
+ [34]) (./Main_Spine/c4.tex [35] [36]
+Chapter 4.
+File: ./Figures/c4/POMDP示意图.png Graphic file (type bmp)
+<./Figures/c4/POMDP示意图.png>
+[37
 
-(f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang2.sty
-File: lstlang2.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang3.sty
-File: lstlang3.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang2.sty
-File: lstlang2.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang3.sty
-File: lstlang3.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang2.sty
-File: lstlang2.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang3.sty
-File: lstlang3.sty 2025/11/14 1.11b listings language file
-) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstmisc.sty
-File: lstmisc.sty 2025/11/14 1.11b (Carsten Heinz)
-) (./main.listing) (./main.listing) [22
+] [38] [39] [40] [41]
 
-] [23]
-\openout11 = `main.listing'.
+LaTeX Font Warning: Font shape `TU/SimSun(1)/m/it' undefined
+(Font)              using `TU/SimSun(1)/m/n' instead on input line 109.
 
- (./main.listing) (f:/tool/texlive/2026/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-)
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 86.
+[42]
+Overfull \hbox (11.43085pt too wide) in paragraph at lines 135--136
+\TU/SimSun(1)/m/n/12 合 机 制。|  设 窗 口 大 小 为 $[]$，|  对 于 当 前 时 间 步 $[]$，|  取 最 近 $[]$ 步 的 观 测 序 列 $\OMS/lmsy/m/n/12 f[][]\OML/lmm/m/it/12 ; [][]; [] ; [][]\OMS/lmsy/m/n/12 g$\TU/SimSun(1)/m/n/12 ，|
+ []
+
+[43]
+File: ./Figures/c4/phase1_encoder训练图.png Graphic file (type bmp)
+<./Figures/c4/phase1_encoder训练图.png>
+File: ./Figures/c4/phase2_iql训练图.png Graphic file (type bmp)
+<./Figures/c4/phase2_iql训练图.png>
+ [44] [45] [46] [47] [48]
+File: ./Figures/c4/动态缺失与因子缺失场景示意图.png Graphic file (type bmp)
+<./Figures/c4/动态缺失与因子缺失场景示意图.png>
+ [49] [50] [51]
+File: ./Figures/c4/dynamic_missing_results.png Graphic file (type bmp)
+<./Figures/c4/dynamic_missing_results.png>
+ [52]
+Overfull \hbox (5.78288pt too wide) in paragraph at lines 545--546
+\TU/SimSun(1)/m/n/12 的 $[][]\OML/lmm/m/it/12 :[][]$\TU/SimSun(1)/m/n/12 、| $[][]\OML/lmm/m/it/12 :[][]$\TU/SimSun(1)/m/n/12 、| $[][]\OML/lmm/m/it/12 :[][]$\TU/SimSun(1)/m/n/12 。|  特 别 是 在 $[] \OT1/lmr/m/n/12 = []%$ \TU/SimSun(1)/m/n/12 时，| \TU/TimesNewRoman(0)/m/n/12 Masked-IQL \TU/SimSun(1)/m/n/12 以 $[][]\OML/lmm/m/it/12 :[][]$ \TU/SimSun(1)/m/n/12 的 分 数 超 越 \TU/TimesNewRoman(0)/m/n/12 IQL_ORDER
+ []
+
+[53]
+Overfull \hbox (5.36339pt too wide) in paragraph at lines 549--550
+[]\TU/TimesNewRoman(0)/m/n/12 IQL_ORDER \TU/SimSun(1)/m/n/12 在 \TU/TimesNewRoman(0)/m/n/12 HalfCheetah \TU/SimSun(1)/m/n/12 环 境 与 \TU/TimesNewRoman(0)/m/n/12 Hopper-medium-replay \TU/SimSun(1)/m/n/12 上 表 现 突 出。| \TU/TimesNewRoman(0)/m/n/12 IQL_ORDER
+ []
+
+File: ./Figures/c4/factor_reduction_results.png Graphic file (type bmp)
+<./Figures/c4/factor_reduction_results.png>
+[54]
+File: ./Figures/c4/ablation_results.png Graphic file (type bmp)
+<./Figures/c4/ablation_results.png>
+ [55]
+File: ./Figures/c4/tsne_consistency_loss.png Graphic file (type bmp)
+<./Figures/c4/tsne_consistency_loss.png>
+ [56]) (./Main_Spine/c5.tex [57]
+Chapter 5.
+[58
+
+] [59]) (./Main_Spine/c6.tex [60]
+Chapter 6.
+) [61
+
+] (./Main_Miscellaneous/acknowledegment.tex) [62
+
+
+]
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10.53937> on input line 182.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7> on input line 182.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5> on input line 182.
+LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <10.53937> not available
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 182.
+LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <7> not available
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 182.
+LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <5> not available
+(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 182.
+ [63
+
+
+] [64]
+Underfull \hbox (badness 5403) in paragraph at lines 182--182
+[]\TU/TimesNewRoman(0)/m/n/10.53937 TASSA Y, DORON Y, MULDAL A, et al. Deepmind control suite[]J[]. arXiv preprint
+ []
+
+[65] [66]
+\l_tmpa_count=\count643
+ (./Main_Miscellaneous/appendix_a.tex
+附录 附录A.
 
 Package fontspec Info: 
 (fontspec)             Could not resolve font "SimHei/BI" (it probably doesn't
@@ -2547,76 +3000,11 @@ Package fontspec Info:
 (fontspec)             - 'normal' (m/n) with NFSS spec.:
 (fontspec)             <->"SimHei/OT:script=hani;language=dflt;"
 
- (./Codes/PSO.m [24] [25])) (./Main_Spine/c4.tex [26]
-Chapter 4.
-\openout11 = `main.listing'.
-
-(./main.listing) (./main.listing
-
-LaTeX Warning: Reference `eqn:c1:diff' on page 27 undefined on input line 1.
-
-)
-\openout11 = `main.listing'.
-
- (./main.listing) (./main.listing
-
-LaTeX Warning: Reference `subfig:icon' on page 27 undefined on input line 1.
-
-
-LaTeX Warning: Reference `tab:methodcompare' on page 27 undefined on input line 2.
-
-) [27
-
-]
-\openout11 = `main.listing'.
-
- (./main.listing) (./main.listing
-Underfull \hbox (badness 10000) in paragraph at lines 1--2
-
- []
-
-)) (./Main_Spine/c5.tex [28]
-Chapter 5.
-[29
-
-]) (./Main_Spine/c6.tex [30] [31]
-Chapter 6.
-LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <10.5> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 6.
-LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <7.34996> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 6.
-LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <5.25> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 6.
-) [32
-
-] (./Main_Miscellaneous/acknowledegment.tex) [33
-
-
-]
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10.53937> on input line 182.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 182.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 182.
-LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <10.53937> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 182.
-LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <7> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 182.
-LaTeX Font Info:    Font shape `TU/TimesNewRoman(0)/bx/n' in size <5> not available
-(Font)              Font shape `TU/TimesNewRoman(0)/b/n' tried instead on input line 182.
- [34
-
-
-]
-\l_tmpa_count=\count643
- (./Main_Miscellaneous/appendix_a.tex
-附录 附录A.
 Package hyperref Info: bookmark level for unknown definition defaults to 0 on input line 11.
 Package hyperref Info: bookmark level for unknown example defaults to 0 on input line 25.
 Package hyperref Info: bookmark level for unknown theorem defaults to 0 on input line 35.
 Package hyperref Info: bookmark level for unknown proof defaults to 0 on input line 46.
-) (./Main_Miscellaneous/appendix_b.tex [35
+) (./Main_Miscellaneous/appendix_b.tex [67
 
 
 ]
@@ -2625,23 +3013,32 @@ File: ./Materials/Icons/xjtu_red.pdf Graphic file (type pdf)
 <use ./Materials/Icons/xjtu_red.pdf>
 File: ./Materials/Icons/xjtu_blue.pdf Graphic file (type pdf)
 <use ./Materials/Icons/xjtu_blue.pdf>
-) [36
+) [68
 
-] (./Main_Miscellaneous/achievement.tex) [37
+] (./Main_Miscellaneous/achievement.tex) [69
 
-] (./Main_Miscellaneous/decision.tex) [38
-
-
-] [39
+] (./Main_Miscellaneous/decision.tex) [70
 
 
-] [40
+] [71
 
-] (./main.aux)
+
+] [72
+
+]
+
+Package glossaries Warning: No \printglossary or \printglossaries found. 
+(Remove \makeglossaries if you don't want any glossaries.) 
+This document will not have a glossary.
+
+(./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2022/08/05>
  ***********
+
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 
 LaTeX Warning: There were undefined references.
@@ -2656,12 +3053,12 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 67966 strings out of 468168
- 1490833 string characters out of 5434210
- 2886070 words of memory out of 5000000
- 95495 multiletter control sequences out of 15000+600000
- 686932 words of font info for 218 fonts, out of 8000000 for 9000
+ 66112 strings out of 468168
+ 1471201 string characters out of 5434210
+ 2593202 words of memory out of 5000000
+ 93672 multiletter control sequences out of 15000+600000
+ 686196 words of font info for 214 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 117i,17n,157p,2513b,5411s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,17n,131p,2513b,7385s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on main.pdf (56 pages).
+Output written on main.pdf (86 pages).
